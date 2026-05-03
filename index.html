@@ -553,7 +553,7 @@ body{
                 
                 <div class="user-profile">
                     <div class="user-meta">
-                        <h4 id="nombreUsuario">Usuario</h4>
+                        <h4 id="nombreUsuario" onclick="cambiarNombreUsuario()" style="cursor: pointer; transition: var(--transition);" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'" title="Haz clic para cambiar tu nombre">Usuario</h4>
                         <p id="emailUsuario">usuario@ems.com</p>
                     </div>
                     <div class="avatar" id="userAvatar" onclick="abrirCambiarAvatar()" title="Haz clic para cambiar tu imagen"><span class="avatar-text">U</span></div>
@@ -984,6 +984,38 @@ body{
               f.removeAttribute("size"); 
               f.style.fontSize = s + "px"; 
           }
+      }
+  }
+
+  // ========= CAMBIAR NOMBRE DE USUARIO =========
+  window.cambiarNombreUsuario = function(){
+      const nuevoNombre = prompt("Ingresa tu nuevo nombre de usuario:", userProfileData.nombre || "");
+      if(!nuevoNombre || nuevoNombre.trim() === "") return;
+      
+      const nombreLimpio = nuevoNombre.trim();
+      
+      // Actualizar en memoria
+      userProfileData.nombre = nombreLimpio;
+      
+      // Actualizar en la interfaz
+      document.getElementById("nombreUsuario").textContent = nombreLimpio;
+      const avatarText = document.getElementById("userAvatar").querySelector(".avatar-text");
+      if(avatarText) avatarText.textContent = nombreLimpio.charAt(0).toUpperCase();
+      
+      // Guardar en Firebase
+      if(currentUser){
+          setDoc(doc(collection(db, 'usuarios'), currentUser.uid), {
+              nombre: nombreLimpio,
+              email: userProfileData.email,
+              avatarUrl: userProfileData.avatarUrl,
+              fechaRegistro: userProfileData.fechaRegistro,
+              documentos: data,
+              ultimaActualizacion: new Date()
+          }, { merge: false }).then(() => {
+              alert("Nombre actualizado correctamente ✔");
+          }).catch(err => {
+              alert("Error al actualizar nombre: " + err.message);
+          });
       }
   }
 
