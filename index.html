@@ -742,33 +742,50 @@ body{
       }
   });
 
-  function iniciarApp(){
+  async function iniciarApp(){
       document.getElementById("login").style.display="none";
       document.getElementById("app").style.display="block";
       document.getElementById("welcomeScreen").style.display="flex";
 
-      onSnapshot(doc(collection(db, 'usuarios'), currentUser.uid), (docSnap) => {
+      const userDocRef = doc(collection(db, 'usuarios'), currentUser.uid);
+      
+      // Primera carga forzada
+      try {
+          const { getDoc } = await import("https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js");
+          const initialSnap = await getDoc(userDocRef);
+          if (initialSnap.exists()) {
+              const userData = initialSnap.data();
+              actualizarInterfazUsuario(userData);
+              data = userData.documentos || {};
+          }
+      } catch (e) { console.error("Error en carga inicial:", e); }
+
+      // Escucha en tiempo real para actualizaciones posteriores
+      onSnapshot(userDocRef, (docSnap) => {
           if (docSnap.exists()) {
               const userData = docSnap.data();
-              userProfileData = {
-                  nombre: userData.nombre,
-                  email: userData.email,
-                  avatarUrl: userData.avatarUrl,
-                  fechaRegistro: userData.fechaRegistro
-              };
-              
-              const name = userData.nombre ? userData.nombre : currentUser.email.split('@')[0];
-              document.getElementById("nombreUsuario").textContent = name;
-              document.getElementById("emailUsuario").textContent = userData.email || currentUser.email;
-              
-              const avatarText = document.getElementById("userAvatar").querySelector(".avatar-text"); 
-              if(avatarText) avatarText.textContent = name.charAt(0).toUpperCase(); 
-              cargarAvatarGuardado(userData);
-              
+              actualizarInterfazUsuario(userData);
               data = userData.documentos || {};
           }
           render();
       });
+  }
+
+  function actualizarInterfazUsuario(userData) {
+      userProfileData = {
+          nombre: userData.nombre,
+          email: userData.email,
+          avatarUrl: userData.avatarUrl,
+          fechaRegistro: userData.fechaRegistro
+      };
+      
+      const name = (userData.nombre && userData.nombre.trim() !== "") ? userData.nombre : currentUser.email.split('@')[0];
+      document.getElementById("nombreUsuario").textContent = name;
+      document.getElementById("emailUsuario").textContent = userData.email || currentUser.email;
+      
+      const avatarText = document.getElementById("userAvatar").querySelector(".avatar-text"); 
+      if(avatarText) avatarText.textContent = name.charAt(0).toUpperCase(); 
+      cargarAvatarGuardado(userData);
   }
 
   // ========= LÓGICA DE LA APP (RESTAURADA) =========
