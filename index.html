@@ -3,28 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EMS Manual - Gestor de Documentos Profesional</title>
+<title>EMS Manual - Sistema de Gestión Documental</title>
+<!-- Google Fonts: Inter & Montserrat -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+<!-- Font Awesome para iconos -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
 :root{
-    --bg-dark:#0a0e27;
-    --bg-darker:#050812;
-    --panel:#1a2332;
-    --card:#242d3f;
-    --card-hover:#2d3a4f;
-    --text:#f0f4f8;
-    --text-muted:#8892a8;
-    --accent:#4f46e5;
-    --accent-light:#6366f1;
-    --accent-bright:#818cf8;
-    --danger:#ef4444;
+    --primary:#3b82f6;
+    --primary-dark:#2563eb;
+    --primary-glow:rgba(59,130,246,0.5);
+    --bg-body:#05070a;
+    --bg-card:rgba(17,25,40,0.75);
+    --bg-sidebar:#0d1117;
+    --text-main:#f8fafc;
+    --text-muted:#94a3b8;
+    --border:rgba(255,255,255,0.08);
     --success:#10b981;
-    --success-light:#34d399;
-    --shadow:0 20px 50px rgba(0,0,0,.5);
-    --shadow-sm:0 4px 12px rgba(0,0,0,.3);
-    --shadow-lg:0 30px 60px rgba(79,70,229,.15);
-    --border-radius:14px;
-    --transition:all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    --danger:#ef4444;
+    --transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 *{
@@ -33,720 +31,529 @@
     padding:0;
 }
 
-html, body {
-    height: 100%;
-}
-
 body{
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto','Oxygen','Ubuntu','Cantarell',sans-serif;
-    background:linear-gradient(135deg,var(--bg-dark) 0%,var(--bg-darker) 100%);
-    color:var(--text);
-    line-height:1.6;
-    letter-spacing:0.4px;
+    font-family:'Inter', sans-serif;
+    background-color:var(--bg-body);
+    color:var(--text-main);
+    overflow:hidden;
+    height:100vh;
 }
 
-/* ===== LOGIN ===== */
+/* ===== LOGIN MODERNO ===== */
 .login{
     height:100vh;
     display:flex;
     justify-content:center;
     align-items:center;
-    background:linear-gradient(135deg,var(--bg-dark) 0%,var(--bg-darker) 100%);
+    background:radial-gradient(circle at top right, rgba(59,130,246,0.15), transparent),
+                radial-gradient(circle at bottom left, rgba(16,185,129,0.1), transparent);
     position:relative;
-    overflow:hidden;
 }
 
-.login::before{
-    content:'';
-    position:absolute;
-    top:-50%;
-    right:-20%;
-    width:600px;
-    height:600px;
-    background:radial-gradient(circle, rgba(79,70,229,.08) 0%, transparent 70%);
-    border-radius:50%;
-    animation:float 20s ease-in-out infinite;
-}
-
-.login::after{
-    content:'';
-    position:absolute;
-    bottom:-30%;
-    left:-10%;
-    width:500px;
-    height:500px;
-    background:radial-gradient(circle, rgba(16,185,129,.05) 0%, transparent 70%);
-    border-radius:50%;
-    animation:float 25s ease-in-out infinite reverse;
-}
-
-@keyframes float{
-    0%, 100%{ transform:translateY(0px); }
-    50%{ transform:translateY(30px); }
-}
-
-.login-box{
-    background:rgba(26,35,50,.8);
-    padding:56px 48px;
-    border-radius:24px;
-    width:420px;
-    text-align:center;
-    box-shadow:var(--shadow-lg);
-    border:1px solid rgba(255,255,255,.08);
+.login-card{
+    background:var(--bg-card);
     backdrop-filter:blur(20px);
-    position:relative;
+    -webkit-backdrop-filter:blur(20px);
+    border:1px solid var(--border);
+    border-radius:24px;
+    width:440px;
+    padding:48px;
+    box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);
+    text-align:center;
     z-index:10;
 }
 
-.login-box h2{
-    margin:0 0 12px 0;
-    font-weight:900;
-    letter-spacing:-1px;
-    font-size:36px;
-    background:linear-gradient(135deg,var(--accent-bright),var(--accent));
+.ems-logo-container{
+    width:80px;
+    height:80px;
+    background:white;
+    border-radius:20px;
+    margin:0 auto 24px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    box-shadow:0 0 30px var(--primary-glow);
+}
+
+.ems-logo-container i{
+    font-size:40px;
+    color:var(--danger);
+}
+
+.login-card h1{
+    font-family:'Montserrat', sans-serif;
+    font-size:32px;
+    margin-bottom:8px;
+    background:linear-gradient(to right, #fff, #94a3b8);
     -webkit-background-clip:text;
     -webkit-text-fill-color:transparent;
-    background-clip:text;
 }
 
-.login-box p{
+.login-card p{
     color:var(--text-muted);
     font-size:14px;
-    margin:0 0 32px 0;
-    font-weight:500;
+    margin-bottom:32px;
 }
 
-.form-group{
-    margin-bottom:18px;
+.input-group{
+    margin-bottom:20px;
     text-align:left;
 }
 
-.form-group label{
+.input-group label{
     display:block;
-    font-size:13px;
-    font-weight:700;
+    font-size:12px;
+    font-weight:600;
     color:var(--text-muted);
     margin-bottom:8px;
     text-transform:uppercase;
-    letter-spacing:0.8px;
+    letter-spacing:1px;
 }
 
-.login-box input{
+.input-wrapper{
+    position:relative;
+}
+
+.input-wrapper i{
+    position:absolute;
+    left:16px;
+    top:50%;
+    transform:translateY(-50%);
+    color:var(--text-muted);
+}
+
+.input-wrapper input{
     width:100%;
-    padding:14px 18px;
-    border:1.5px solid rgba(255,255,255,.1);
-    border-radius:12px;
-    background:rgba(15,31,45,.6);
-    color:var(--text);
-    outline:none;
-    transition:var(--transition);
-    font-size:15px;
-    font-weight:500;
-}
-
-.login-box input::placeholder{
-    color:rgba(255,255,255,.4);
-}
-
-.login-box input:focus{
-    border-color:var(--accent);
-    background:rgba(15,31,45,.9);
-    box-shadow:0 0 0 4px rgba(79,70,229,.2), inset 0 0 10px rgba(79,70,229,.05);
-}
-
-.button-group{
-    display:flex;
-    gap:12px;
-    margin-top:28px;
-}
-
-.login-box button{
-    flex:1;
-    padding:14px;
-    border:none;
+    padding:14px 16px 14px 48px;
+    background:rgba(0,0,0,0.3);
+    border:1px solid var(--border);
     border-radius:12px;
     color:white;
-    cursor:pointer;
-    font-weight:700;
-    transition:var(--transition);
     font-size:15px;
-    position:relative;
-    overflow:hidden;
-    letter-spacing:0.5px;
-    text-transform:uppercase;
+    transition:var(--transition);
 }
 
-.login-box button::before{
-    content:'';
-    position:absolute;
-    top:0;
-    left:-100%;
+.input-wrapper input:focus{
+    outline:none;
+    border-color:var(--primary);
+    box-shadow:0 0 0 4px rgba(59,130,246,0.15);
+}
+
+.btn-primary{
     width:100%;
-    height:100%;
-    background:rgba(255,255,255,.1);
-    transition:left 0.4s;
-    z-index:-1;
+    padding:14px;
+    background:var(--primary);
+    color:white;
+    border:none;
+    border-radius:12px;
+    font-weight:700;
+    font-size:15px;
+    cursor:pointer;
+    transition:var(--transition);
+    margin-top:10px;
 }
 
-.login-box button:hover::before{
-    left:100%;
+.btn-primary:hover{
+    background:var(--primary-dark);
+    transform:translateY(-2px);
+    box-shadow:0 10px 20px rgba(59,130,246,0.3);
 }
 
-.btn-login{
-    background:linear-gradient(135deg,var(--accent),var(--accent-light));
-    box-shadow:0 6px 20px rgba(79,70,229,.4);
+.btn-secondary{
+    width:100%;
+    padding:14px;
+    background:transparent;
+    color:var(--text-main);
+    border:1px solid var(--border);
+    border-radius:12px;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    transition:var(--transition);
+    margin-top:12px;
 }
 
-.btn-login:hover{
-    transform:translateY(-3px);
-    box-shadow:0 10px 30px rgba(79,70,229,.6);
+.btn-secondary:hover{
+    background:rgba(255,255,255,0.05);
 }
 
-.btn-create{
-    background:linear-gradient(135deg,var(--success),var(--success-light));
-    box-shadow:0 6px 20px rgba(16,185,129,.3);
+/* ===== APP LAYOUT ===== */
+.app-container{
+    display:grid;
+    grid-template-columns:280px 1fr;
+    height:100vh;
 }
 
-.btn-create:hover{
-    transform:translateY(-3px);
-    box-shadow:0 10px 30px rgba(16,185,129,.5);
+/* SIDEBAR */
+.sidebar{
+    background:var(--bg-sidebar);
+    border-right:1px solid var(--border);
+    display:flex;
+    flex-direction:column;
+    padding:24px;
 }
 
-/* ===== HEADER ===== */
-header{
+.app-logo{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:40px;
+}
+
+.app-logo i{
+    color:var(--danger);
+    font-size:24px;
+}
+
+.app-logo span{
+    font-family:'Montserrat', sans-serif;
+    font-weight:800;
+    font-size:20px;
+    letter-spacing:-0.5px;
+}
+
+.nav-section{
+    flex:1;
+    overflow-y:auto;
+}
+
+.nav-section::-webkit-scrollbar{ width:4px; }
+.nav-section::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.1); border-radius:10px; }
+
+.sidebar-btn{
+    width:100%;
+    padding:12px;
+    margin-bottom:8px;
+    border-radius:10px;
+    border:none;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:600;
+    font-size:14px;
+    transition:var(--transition);
+}
+
+.btn-add-cat{ background:rgba(16,185,129,0.1); color:var(--success); }
+.btn-add-cat:hover{ background:rgba(16,185,129,0.2); }
+
+.btn-add-doc{ background:rgba(59,130,246,0.1); color:var(--primary); }
+.btn-add-doc:hover{ background:rgba(59,130,246,0.2); }
+
+.cat-item{
+    margin-bottom:4px;
+}
+
+.cat-header{
+    padding:10px 12px;
+    border-radius:8px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    transition:var(--transition);
+}
+
+.cat-header:hover{ background:rgba(255,255,255,0.05); }
+.cat-header.active{ background:rgba(59,130,246,0.1); color:var(--primary); }
+
+.cat-name{ font-size:14px; font-weight:600; display:flex; align-items:center; gap:8px; }
+
+.doc-list{ margin-left:24px; margin-top:4px; border-left:1px solid var(--border); padding-left:12px; }
+
+.doc-item{
+    padding:8px 12px;
+    font-size:13px;
+    color:var(--text-muted);
+    cursor:pointer;
+    border-radius:6px;
+    margin-bottom:2px;
+    transition:var(--transition);
+}
+
+.doc-item:hover{ color:var(--text-main); background:rgba(255,255,255,0.03); }
+.doc-item.active{ color:white; background:var(--primary); font-weight:600; }
+
+/* MAIN CONTENT */
+.main-content{
+    display:flex;
+    flex-direction:column;
+    background:#05070a;
+}
+
+.top-bar{
+    padding:16px 32px;
+    border-bottom:1px solid var(--border);
     display:flex;
     justify-content:space-between;
     align-items:center;
-    padding:20px 32px;
-    background:linear-gradient(to right,rgba(26,35,50,.95),rgba(36,45,63,.95));
-    backdrop-filter:blur(15px);
-    box-shadow:0 10px 40px rgba(0,0,0,.4);
-    border-bottom:1px solid rgba(255,255,255,.06);
-    gap:28px;
+    background:rgba(13,17,23,0.8);
+    backdrop-filter:blur(10px);
 }
 
-header input{
-    flex:1;
-    max-width:450px;
-    padding:13px 20px;
-    border:1.5px solid rgba(255,255,255,.1);
-    border-radius:12px;
-    background:rgba(26,35,50,.6);
-    color:var(--text);
-    outline:none;
-    transition:var(--transition);
+.search-bar{
+    position:relative;
+    width:400px;
+}
+
+.search-bar i{ position:absolute; left:16px; top:50%; transform:translateY(-50%); color:var(--text-muted); }
+.search-bar input{
+    width:100%;
+    padding:10px 16px 10px 44px;
+    background:rgba(255,255,255,0.05);
+    border:1px solid var(--border);
+    border-radius:10px;
+    color:white;
     font-size:14px;
-    font-weight:500;
 }
 
-header input:focus{
-    border-color:var(--accent);
-    background:rgba(26,35,50,.9);
-    box-shadow:0 0 0 4px rgba(79,70,229,.2);
-}
-
-.user-section{
+.user-profile{
     display:flex;
     align-items:center;
-    gap:16px;
+    gap:12px;
 }
 
-.user-avatar{
-    width:48px;
-    height:48px;
-    border-radius:12px;
-    border:2px solid var(--accent);
-    object-fit:cover;
-    box-shadow:0 4px 12px rgba(79,70,229,.3);
-}
+.user-meta{ text-align:right; }
+.user-meta h4{ font-size:14px; font-weight:700; }
+.user-meta p{ font-size:11px; color:var(--text-muted); }
 
-.user-info{
+.avatar{
+    width:40px;
+    height:40px;
+    border-radius:10px;
+    background:linear-gradient(45deg, var(--primary), var(--success));
     display:flex;
-    flex-direction:column;
-    align-items:flex-end;
+    justify-content:center;
+    align-items:center;
+    font-weight:800;
+    color:white;
 }
 
-.user-name{
-    font-size:15px;
-    font-weight:700;
-    color:var(--text);
-    letter-spacing:0.3px;
-}
-
-.user-email{
-    font-size:12px;
+.btn-logout{
+    padding:8px;
     color:var(--text-muted);
-    font-weight:500;
-}
-
-.logout{
-    background:linear-gradient(135deg,var(--danger),#f87171);
-    padding:10px 20px;
-    border-radius:10px;
-    font-size:13px;
-    border:none;
-    color:white;
-    cursor:pointer;
-    font-weight:700;
-    transition:var(--transition);
-    text-transform:uppercase;
-    letter-spacing:0.5px;
-    box-shadow:0 4px 12px rgba(239,68,68,.3);
-}
-
-.logout:hover{
-    transform:translateY(-2px);
-    box-shadow:0 6px 16px rgba(239,68,68,.5);
-}
-
-/* ===== LAYOUT ===== */
-.main{
-    display:flex;
-    height:calc(100vh - 80px);
-}
-
-/* ===== SIDEBAR ===== */
-.sidebar{
-    width:320px;
-    background:linear-gradient(180deg,rgba(26,35,50,.9),rgba(20,28,40,.9));
-    padding:24px;
-    overflow-y:auto;
-    box-shadow:inset -1px 0 0 rgba(255,255,255,.06);
-    border-right:1px solid rgba(255,255,255,.06);
-    backdrop-filter:blur(10px);
-}
-
-.sidebar::-webkit-scrollbar{
-    width:6px;
-}
-
-.sidebar::-webkit-scrollbar-track{
-    background:transparent;
-}
-
-.sidebar::-webkit-scrollbar-thumb{
-    background:rgba(255,255,255,.1);
-    border-radius:3px;
-}
-
-.sidebar::-webkit-scrollbar-thumb:hover{
-    background:rgba(255,255,255,.2);
-}
-
-.buttons{
-    display:flex;
-    flex-direction:column;
-    gap:12px;
-    margin-bottom:28px;
-}
-
-button{
-    border:none;
-    padding:12px 16px;
-    border-radius:11px;
-    color:white;
-    cursor:pointer;
-    font-weight:700;
-    transition:var(--transition);
-    font-size:14px;
-    position:relative;
-    overflow:hidden;
-    text-transform:uppercase;
-    letter-spacing:0.5px;
-}
-
-.new-cat{
-    background:linear-gradient(135deg,#059669,var(--success));
-    box-shadow:0 4px 12px rgba(16,185,129,.2);
-}
-
-.new-cat:hover{
-    transform:translateY(-2px);
-    box-shadow:0 6px 16px rgba(16,185,129,.4);
-}
-
-.new-doc{
-    background:linear-gradient(135deg,var(--accent),var(--accent-light));
-    box-shadow:0 4px 12px rgba(79,70,229,.2);
-}
-
-.new-doc:hover{
-    transform:translateY(-2px);
-    box-shadow:0 6px 16px rgba(79,70,229,.4);
-}
-
-.category{
-    margin-bottom:14px;
-}
-
-.category-title{
-    padding:14px 16px;
-    background:rgba(36,45,63,.6);
-    border-radius:11px;
-    cursor:pointer;
-    font-weight:700;
-    transition:var(--transition);
-    font-size:14px;
-    border:1.5px solid rgba(255,255,255,.08);
-    position:relative;
-    overflow:hidden;
-    letter-spacing:0.3px;
-}
-
-.category-title::before{
-    content:'';
-    position:absolute;
-    left:0;
-    top:0;
-    height:100%;
-    width:3px;
-    background:var(--accent);
-    transform:scaleY(0);
-    transform-origin:center;
-    transition:transform 0.3s;
-}
-
-.category-title:hover{
-    background:rgba(36,45,63,.8);
-    border-color:rgba(255,255,255,.12);
-    transform:translateX(4px);
-}
-
-.category-title.active{
-    background:linear-gradient(135deg,rgba(79,70,229,.25),rgba(79,70,229,.15));
-    border-color:var(--accent);
-    box-shadow:0 0 20px rgba(79,70,229,.3), inset 0 0 8px rgba(79,70,229,.1);
-}
-
-.category-title.active::before{
-    transform:scaleY(1);
-}
-
-.docs{
-    margin-top:8px;
-    margin-left:12px;
-    animation:slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown{
-    from{
-        opacity:0;
-        transform:translateY(-8px);
-    }
-    to{
-        opacity:1;
-        transform:translateY(0);
-    }
-}
-
-.doc{
-    padding:12px 14px;
-    margin-bottom:8px;
-    border-radius:10px;
-    background:rgba(36,45,63,.4);
     cursor:pointer;
     transition:var(--transition);
-    font-size:13px;
-    border:1px solid rgba(255,255,255,.05);
-    position:relative;
-    font-weight:600;
 }
 
-.doc:hover{
-    background:rgba(36,45,63,.6);
-    border-color:rgba(255,255,255,.1);
-    padding-left:16px;
-    box-shadow:0 4px 12px rgba(79,70,229,.2);
-}
+.btn-logout:hover{ color:var(--danger); }
 
-.doc.active{
-    background:linear-gradient(135deg,var(--accent),var(--accent-light));
-    color:white;
-    box-shadow:0 6px 20px rgba(79,70,229,.4);
-    border-color:var(--accent-light);
-    font-weight:700;
-}
-
-/* ===== CONTENT ===== */
-.content{
+/* EDITOR AREA */
+.editor-container{
     flex:1;
     padding:32px;
     display:flex;
     flex-direction:column;
-    background:linear-gradient(135deg,rgba(10,14,39,.5),rgba(15,24,35,.5));
+    gap:20px;
+    overflow:hidden;
 }
 
-.actions{
-    margin-bottom:20px;
+.editor-toolbar{
+    background:var(--bg-sidebar);
+    padding:12px;
+    border-radius:12px;
+    border:1px solid var(--border);
     display:flex;
-    gap:12px;
+    gap:8px;
     flex-wrap:wrap;
+    align-items:center;
 }
 
-/* ===== EDITOR ===== */
-.editor{
-    width:100%;
+.tool-btn{
+    width:36px;
+    height:36px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:transparent;
+    border:none;
+    color:var(--text-muted);
+    border-radius:8px;
+    cursor:pointer;
+    transition:var(--transition);
+}
+
+.tool-btn:hover{ background:rgba(255,255,255,0.05); color:white; }
+
+.tool-select{
+    background:rgba(255,255,255,0.05);
+    border:1px solid var(--border);
+    color:white;
+    padding:6px 10px;
+    border-radius:8px;
+    font-size:12px;
+    outline:none;
+}
+
+.tool-sep{ width:1px; height:24px; background:var(--border); margin:0 4px; }
+
+.btn-save{ background:var(--success) !important; color:white !important; padding:0 16px !important; width:auto !important; font-weight:700; font-size:12px; }
+.btn-delete{ background:rgba(239,68,68,0.1) !important; color:var(--danger) !important; padding:0 16px !important; width:auto !important; font-weight:700; font-size:12px; }
+
+.editor-paper{
     flex:1;
-    padding:32px;
-    background:rgba(26,35,50,.7);
-    border-radius:18px;
+    background:var(--bg-sidebar);
+    border-radius:16px;
+    border:1px solid var(--border);
+    padding:40px;
     overflow-y:auto;
-    display:none;
-    box-shadow:0 10px 40px rgba(0,0,0,.3);
+    box-shadow:0 10px 30px rgba(0,0,0,0.2);
+    font-size:16px;
     line-height:1.8;
-    border:1px solid rgba(255,255,255,.08);
-    transition:var(--transition);
-    backdrop-filter:blur(10px);
-    font-size:15px;
-    color:var(--text);
-}
-
-.editor:focus{
     outline:none;
-    box-shadow:0 10px 40px rgba(0,0,0,.4), 0 0 0 4px rgba(79,70,229,.2);
-    border-color:var(--accent);
 }
 
-.editor::-webkit-scrollbar{
-    width:8px;
+.editor-paper:empty::before{
+    content: 'Comienza a escribir tu documento EMS...';
+    color: var(--text-muted);
 }
 
-.editor::-webkit-scrollbar-track{
-    background:transparent;
-}
-
-.editor::-webkit-scrollbar-thumb{
-    background:rgba(255,255,255,.15);
-    border-radius:4px;
-}
-
-.editor::-webkit-scrollbar-thumb:hover{
-    background:rgba(255,255,255,.25);
-}
-
-/* ===== TOOLBAR ===== */
-.toolbar{
-    flex-wrap:wrap;
-    background:rgba(36,45,63,.7);
-    padding:18px;
-    border-radius:14px;
-    border:1px solid rgba(255,255,255,.08);
-    box-shadow:0 6px 20px rgba(0,0,0,.2);
-    backdrop-filter:blur(10px);
-    gap:10px;
-    display:none;
-}
-
-.toolbar button,
-.toolbar select,
-.toolbar input[type=color]{
-    background:rgba(26,35,50,.8);
-    color:white;
-    border:1.5px solid rgba(255,255,255,.1);
-    border-radius:10px;
-    padding:11px 15px;
-    cursor:pointer;
-    transition:var(--transition);
-    font-size:13px;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:0.4px;
-}
-
-.toolbar button:hover,
-.toolbar select:hover{
-    background:var(--accent);
-    border-color:var(--accent);
-    box-shadow:0 6px 16px rgba(79,70,229,.4);
-    transform:translateY(-2px);
-}
-
-.toolbar select{
-    outline:none;
-    appearance:none;
-    padding-right:28px;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23f0f4f8' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-    background-repeat:no-repeat;
-    background-position:right 10px center;
-    padding-right:32px;
-}
-
-.toolbar input[type=color]{
-    width:44px;
-    height:44px;
-    padding:6px;
-    cursor:pointer;
-}
-
-.toolbar .save{
-    background:linear-gradient(135deg,var(--success),var(--success-light)) !important;
-    border-color:var(--success-light) !important;
-    box-shadow:0 4px 12px rgba(16,185,129,.3) !important;
-}
-
-.toolbar .save:hover{
-    box-shadow:0 6px 16px rgba(16,185,129,.5) !important;
-}
-
-.toolbar .delete{
-    background:linear-gradient(135deg,var(--danger),#f87171) !important;
-    border-color:#f87171 !important;
-    box-shadow:0 4px 12px rgba(239,68,68,.3) !important;
-}
-
-.toolbar .delete:hover{
-    box-shadow:0 6px 16px rgba(239,68,68,.5) !important;
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
-    .main {
-        flex-direction: column;
-    }
-    
-    .sidebar {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid rgba(255,255,255,.06);
-        max-height: 220px;
-    }
-    
-    .content {
-        padding: 20px;
-    }
-    
-    header {
-        flex-direction: column;
-        gap: 16px;
-    }
-    
-    header input {
-        max-width: 100%;
-    }
-    
-    .user-section {
-        width: 100%;
-        justify-content: space-between;
-    }
-    
-    .login-box {
-        width: 90%;
-        padding: 40px 32px;
-    }
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+    .app-container { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
 }
 </style>
-
 </head>
 <body>
 
-<!-- LOGIN -->
+<!-- PANTALLA DE LOGIN -->
 <div id="login" class="login">
-    <div class="login-box">
-        <h2>EMS Manual</h2>
-        <p>Gestor de Documentos Profesional</p>
+    <div class="login-card">
+        <div class="ems-logo-container">
+            <i class="fa-solid fa-star-of-life"></i>
+        </div>
+        <h1>EMS Manual</h1>
+        <p id="loginSubtitle">Gestión Documental de Emergencias</p>
         
-        <div class="form-group">
+        <div class="input-group">
             <label>Correo Electrónico</label>
-            <input id="emailInput" placeholder="tu@correo.com" type="email">
+            <div class="input-wrapper">
+                <i class="fa-solid fa-envelope"></i>
+                <input id="emailInput" type="email" placeholder="nombre@ejemplo.com">
+            </div>
         </div>
         
-        <div class="form-group">
+        <div class="input-group">
             <label>Contraseña</label>
-            <input id="passwordInput" placeholder="••••••••" type="password">
+            <div class="input-wrapper">
+                <i class="fa-solid fa-lock"></i>
+                <input id="passwordInput" type="password" placeholder="••••••••">
+            </div>
         </div>
         
-        <div class="form-group" id="nameGroup" style="display:none;">
+        <div class="input-group" id="nameGroup" style="display:none;">
             <label>Nombre Completo</label>
-            <input id="nameInput" placeholder="Tu nombre" type="text">
+            <div class="input-wrapper">
+                <i class="fa-solid fa-user"></i>
+                <input id="nameInput" type="text" placeholder="Tu nombre">
+            </div>
         </div>
         
-        <div class="button-group">
-            <button id="mainBtn" class="btn-login" onclick="handleAuth()">Iniciar Sesión</button>
-            <button id="toggleBtn" class="btn-create" onclick="toggleRegister()">Registrarse</button>
-        </div>
+        <button id="mainBtn" class="btn-primary" onclick="handleAuth()">Iniciar Sesión</button>
+        <button id="toggleBtn" class="btn-secondary" onclick="toggleRegister()">Crear una cuenta</button>
     </div>
 </div>
 
-<!-- APP -->
+<!-- APLICACIÓN PRINCIPAL -->
 <div id="app" style="display:none">
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="app-logo">
+                <i class="fa-solid fa-star-of-life"></i>
+                <span>EMS MANUAL</span>
+            </div>
+            
+            <div class="buttons">
+                <button class="sidebar-btn btn-add-cat" onclick="nuevaCategoria()">
+                    <i class="fa-solid fa-folder-plus"></i> Nueva Categoría
+                </button>
+                <button class="sidebar-btn btn-add-doc" onclick="nuevoDocumento()">
+                    <i class="fa-solid fa-file-circle-plus"></i> Nuevo Documento
+                </button>
+            </div>
+            
+            <div class="nav-section" id="lista">
+                <!-- Las categorías se cargarán aquí -->
+            </div>
+        </aside>
 
-<header>
-    <input type="text" placeholder="🔍 Buscar documento..." oninput="buscarPorTitulo(this.value)">
-    <div class="user-section">
-        <div class="user-info">
-            <div class="user-name" id="nombreUsuario">Usuario</div>
-            <div class="user-email" id="emailUsuario">usuario@email.com</div>
-        </div>
-        <img class="user-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=default" alt="Avatar">
-        <button class="logout" onclick="cerrarSesion()">Salir</button>
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="search-bar">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Buscar en documentos..." oninput="buscarPorTitulo(this.value)">
+                </div>
+                
+                <div class="user-profile">
+                    <div class="user-meta">
+                        <h4 id="nombreUsuario">Usuario</h4>
+                        <p id="emailUsuario">usuario@ems.com</p>
+                    </div>
+                    <div class="avatar" id="userAvatar">U</div>
+                    <div class="btn-logout" onclick="cerrarSesion()" title="Cerrar Sesión">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </div>
+                </div>
+            </header>
+
+            <div class="editor-container">
+                <div class="editor-toolbar" id="toolbar" style="display:none">
+                    <button class="tool-btn" onclick="cmd('bold')" title="Negrita"><i class="fa-solid fa-bold"></i></button>
+                    <button class="tool-btn" onclick="cmd('italic')" title="Cursiva"><i class="fa-solid fa-italic"></i></button>
+                    <button class="tool-btn" onclick="cmd('underline')" title="Subrayado"><i class="fa-solid fa-underline"></i></button>
+                    
+                    <div class="tool-sep"></div>
+                    
+                    <select class="tool-select" onchange="cmd('fontName', this.value)">
+                        <option value="Inter">Inter</option>
+                        <option value="Arial">Arial</option>
+                        <option value="Georgia">Georgia</option>
+                        <option value="Courier New">Courier</option>
+                    </select>
+                    
+                    <select class="tool-select" onchange="setFontSize(this.value)">
+                        <option value="14">14px</option>
+                        <option value="16">16px</option>
+                        <option value="18">18px</option>
+                        <option value="24">24px</option>
+                    </select>
+                    
+                    <div class="tool-sep"></div>
+                    
+                    <button class="tool-btn" onclick="cmd('justifyLeft')"><i class="fa-solid fa-align-left"></i></button>
+                    <button class="tool-btn" onclick="cmd('justifyCenter')"><i class="fa-solid fa-align-center"></i></button>
+                    <button class="tool-btn" onclick="cmd('justifyRight')"><i class="fa-solid fa-align-right"></i></button>
+                    
+                    <div class="tool-sep"></div>
+                    
+                    <button class="tool-btn" onclick="insertImage()"><i class="fa-solid fa-image"></i></button>
+                    
+                    <div style="flex:1"></div>
+                    
+                    <button class="sidebar-btn btn-save" onclick="guardar()">
+                        <i class="fa-solid fa-floppy-disk"></i> GUARDAR
+                    </button>
+                    <button class="sidebar-btn btn-delete" onclick="eliminar()">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+                
+                <div id="editor" class="editor-paper" contenteditable="false"></div>
+            </div>
+        </main>
     </div>
-</header>
-
-<div class="main">
-
-<aside class="sidebar">
-    <div class="buttons">
-        <button class="new-cat" onclick="nuevaCategoria()">+ Categoría</button>
-        <button class="new-doc" onclick="nuevoDocumento()">+ Documento</button>
-    </div>
-    <div id="lista"></div>
-</aside>
-
-<section class="content">
-    <div class="actions toolbar" id="toolbar">
-    <button onclick="cmd('bold')" title="Negrita"><b>B</b></button>
-    <button onclick="cmd('italic')" title="Cursiva"><i>I</i></button>
-    <button onclick="cmd('underline')" title="Subrayado"><u>U</u></button>
-
-    <select onchange="cmd('fontName', this.value)" title="Fuente">
-    <option value="">Fuente</option>
-    <option>Arial</option>
-    <option>Calibri</option>
-    <option>Times New Roman</option>
-    <option>Verdana</option>
-    <option>Courier New</option>
-    <option>Georgia</option>
-    <option>Tahoma</option>
-</select>
-
-   <select onchange="setFontSize(this.value)" title="Tamaño">
-    <option value="">Tamaño</option>
-    <option value="10">10</option>
-    <option value="12">12</option>
-    <option value="14">14</option>
-    <option value="16">16</option>
-    <option value="18">18</option>
-    <option value="24">24</option>
-    <option value="32">32</option>
-</select>
-
-    <input type="color" onchange="cmd('foreColor', this.value)" title="Color de texto">
-
-    <button onclick="cmd('insertUnorderedList')" title="Lista con viñetas">• Lista</button>
-    <button onclick="cmd('insertOrderedList')" title="Lista numerada">1. Lista</button>
-
-    <button onclick="cmd('justifyLeft')" title="Alinear a la izquierda">⬅</button>
-    <button onclick="cmd('justifyCenter')" title="Centrar">⬌</button>
-    <button onclick="cmd('justifyRight')" title="Alinear a la derecha">➡</button>
-
-    <button onclick="insertImage()" title="Insertar imagen">🖼 Imagen</button>
-
-    <button class="save" onclick="guardar()" title="Guardar cambios">Guardar</button>
-    <button class="delete" onclick="eliminar()" title="Eliminar">Eliminar</button>
-</div>
-    <div id="editor" class="editor" contenteditable="false"></div>
-</section>
-
-</div>
 </div>
 
-<!-- Firebase SDK v12 - Inicialización Modular -->
+<!-- Firebase SDK v12 -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
   import { getFirestore, collection, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-  // Configuración de Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyCyhzS4DNTraa0ALKpnncJC85sVA4vvmYQ",
     authDomain: "base-ems.firebaseapp.com",
@@ -757,39 +564,38 @@ button{
     measurementId: "G-SQXQN52J67"
   };
 
-  // Inicializar Firebase
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // ========= VARIABLES DE ESTADO =========
   let currentUser = null;
-  let userData = null;
   let data = {};
   let categoriasAbiertas = {};
   let categoriaActual = null;
-  let bufferTemporal = {};
   let docActual = null;
   let isRegisterMode = false;
 
   const lista = document.getElementById("lista");
   const editor = document.getElementById("editor");
 
-  // ========= AUTENTICACIÓN =========
+  // AUTH FUNCTIONS
   window.toggleRegister = function(){
       isRegisterMode = !isRegisterMode;
       const nameGroup = document.getElementById("nameGroup");
       const mainBtn = document.getElementById("mainBtn");
       const toggleBtn = document.getElementById("toggleBtn");
+      const subtitle = document.getElementById("loginSubtitle");
       
       if(isRegisterMode){
           nameGroup.style.display = "block";
-          mainBtn.textContent = "Crear Cuenta";
-          toggleBtn.textContent = "Volver";
+          mainBtn.textContent = "CREAR CUENTA";
+          toggleBtn.textContent = "YA TENGO CUENTA";
+          subtitle.textContent = "Únete al sistema de gestión EMS";
       } else {
           nameGroup.style.display = "none";
-          mainBtn.textContent = "Iniciar Sesión";
-          toggleBtn.textContent = "Registrarse";
+          mainBtn.textContent = "INICIAR SESIÓN";
+          toggleBtn.textContent = "CREAR UNA CUENTA";
+          subtitle.textContent = "Gestión Documental de Emergencias";
       }
   }
 
@@ -803,23 +609,18 @@ button{
       const pass = document.getElementById("passwordInput").value.trim();
       const name = document.getElementById("nameInput").value.trim();
       
-      if(!email || !pass || !name) return alert("Completa todos los campos");
+      if(!email || !pass || !name) return alert("Por favor, completa todos los campos");
       if(pass.length < 6) return alert("La contraseña debe tener al menos 6 caracteres");
 
       createUserWithEmailAndPassword(auth, email, pass)
           .then((userCredential) => {
               const user = userCredential.user;
-              const userDocRef = doc(collection(db, 'usuarios'), user.uid);
-              setDoc(userDocRef, {
+              setDoc(doc(collection(db, 'usuarios'), user.uid), {
                   nombre: name,
                   email: email,
                   documentos: {},
                   fechaRegistro: new Date()
-              })
-              .then(() => {
-                  // No alert, entrada directa por onAuthStateChanged
-              })
-              .catch(err => alert("Error al guardar datos: " + err.message));
+              });
           })
           .catch(err => alert("Error: " + err.message));
   }
@@ -827,18 +628,14 @@ button{
   window.login = function(){
       const email = document.getElementById("emailInput").value.trim();
       const pass = document.getElementById("passwordInput").value.trim();
-      
-      if(!email || !pass) return alert("Completa todos los campos");
-
-      signInWithEmailAndPassword(auth, email, pass)
-          .catch(err => alert("Error: " + err.message));
+      if(!email || !pass) return alert("Ingresa tus credenciales");
+      signInWithEmailAndPassword(auth, email, pass).catch(err => alert("Error: " + err.message));
   }
 
   window.cerrarSesion = function(){
       signOut(auth).then(() => location.reload());
   }
 
-  // Escuchar cambios en el estado de autenticación
   onAuthStateChanged(auth, user => {
       if (user) {
           currentUser = user;
@@ -854,190 +651,137 @@ button{
       document.getElementById("login").style.display="none";
       document.getElementById("app").style.display="block";
 
-      // Cargar datos del usuario desde Firestore
-      const userDocRef = doc(collection(db, 'usuarios'), currentUser.uid);
-      onSnapshot(userDocRef, (docSnap) => {
+      onSnapshot(doc(collection(db, 'usuarios'), currentUser.uid), (docSnap) => {
           if (docSnap.exists()) {
-              userData = docSnap.data();
-              document.getElementById("nombreUsuario").textContent = userData.nombre || currentUser.email.split('@')[0];
+              const userData = docSnap.data();
+              const name = userData.nombre || currentUser.email.split('@')[0];
+              document.getElementById("nombreUsuario").textContent = name;
               document.getElementById("emailUsuario").textContent = userData.email || currentUser.email;
+              document.getElementById("userAvatar").textContent = name.charAt(0).toUpperCase();
               data = userData.documentos || {};
-          } else {
-              data = {};
-              document.getElementById("nombreUsuario").textContent = currentUser.email.split('@')[0];
-              document.getElementById("emailUsuario").textContent = currentUser.email;
           }
           render();
-      }, (error) => {
-          console.error("Error al cargar documentos desde Firestore:", error);
       });
-      
-      document.getElementById("toolbar").style.display="none";
   }
 
-  // ========= RENDER =========
+  // APP LOGIC
   window.render = function(){
       lista.innerHTML="";
       Object.keys(data).forEach(cat=>{
-          const c=document.createElement("div");
-          c.className="category";
-
-          const t=document.createElement("div");
-          t.className="category-title"+(cat===categoriaActual?" active":"");
-          t.textContent=cat;
-
-          t.onclick=()=>{
-              categoriaActual=cat;
-              docActual=null;
-              categoriasAbiertas[cat]=!categoriasAbiertas[cat];
-              editor.style.display="none";
-              document.getElementById("toolbar").style.display="none";
+          const catDiv = document.createElement("div");
+          catDiv.className = "cat-item";
+          
+          const header = document.createElement("div");
+          header.className = "cat-header" + (cat === categoriaActual ? " active" : "");
+          header.innerHTML = `
+            <div class="cat-name"><i class="fa-solid ${categoriasAbiertas[cat] ? 'fa-folder-open' : 'fa-folder'}"></i> ${cat}</div>
+            <i class="fa-solid fa-chevron-${categoriasAbiertas[cat] ? 'down' : 'right'}" style="font-size:10px"></i>
+          `;
+          
+          header.onclick = () => {
+              categoriaActual = cat;
+              categoriasAbiertas[cat] = !categoriasAbiertas[cat];
               render();
           };
-
-          c.appendChild(t);
+          
+          catDiv.appendChild(header);
 
           if(categoriasAbiertas[cat]){
-              const dwrap=document.createElement("div");
-              dwrap.className="docs";
-              Object.keys(data[cat]).forEach(d=>{
-                  const doc=document.createElement("div");
-                  doc.className="doc"+(d===docActual?" active":"");
-                  doc.textContent=d;
-                  doc.onclick=()=>abrir(cat,d);
-                  dwrap.appendChild(doc);
+              const dList = document.createElement("div");
+              dList.className = "doc-list";
+              Object.keys(data[cat]).forEach(d => {
+                  const dItem = document.createElement("div");
+                  dItem.className = "doc-item" + (d === docActual ? " active" : "");
+                  dItem.innerHTML = `<i class="fa-solid fa-file-lines"></i> ${d}`;
+                  dItem.onclick = (e) => {
+                      e.stopPropagation();
+                      abrir(cat, d);
+                  };
+                  dList.appendChild(dItem);
               });
-              c.appendChild(dwrap);
+              catDiv.appendChild(dList);
           }
-
-          lista.appendChild(c);
+          lista.appendChild(catDiv);
       });
   }
 
-  // ========= ACCIONES =========
   window.nuevaCategoria = function(){
-      const n=prompt("Nombre de la categoría:");
-      if(!n||data[n])return;
-      data[n]={};
+      const n = prompt("Nombre de la nueva categoría:");
+      if(!n || data[n]) return;
+      data[n] = {};
       guardarStorage();
-      render();
   }
 
   window.nuevoDocumento = function(){
-      if(!categoriaActual)return alert("Selecciona una categoría");
-      const n=prompt("Nombre del documento:");
-      if(!n||data[categoriaActual][n])return;
-      data[categoriaActual][n]="";
-      abrir(categoriaActual,n);
+      if(!categoriaActual) return alert("Primero selecciona una categoría");
+      const n = prompt("Nombre del nuevo documento:");
+      if(!n || data[categoriaActual][n]) return;
+      data[categoriaActual][n] = "";
+      abrir(categoriaActual, n);
   }
 
-  window.abrir = function(cat, doc){
-      if(categoriaActual && docActual){
-          bufferTemporal[categoriaActual + "||" + docActual] = editor.innerHTML;
-      }
-
-      categoriasAbiertas = {};
-      categoriasAbiertas[cat] = true;
+  window.abrir = function(cat, docName){
       categoriaActual = cat;
-      docActual = doc;
-
+      docActual = docName;
       editor.style.display = "block";
       editor.contentEditable = "true";
-      const key = cat + "||" + doc;
-      editor.innerHTML = bufferTemporal[key] ?? data[cat][doc];
-
+      editor.innerHTML = data[cat][docName] || "";
       document.getElementById("toolbar").style.display = "flex";
       render();
   }
 
   window.guardar = function(){
-      if(categoriaActual && docActual){
-          bufferTemporal[categoriaActual + "||" + docActual] = editor.innerHTML;
-      }
-
-      for(const key in bufferTemporal){
-          const [cat, doc] = key.split("||");
-          if(!data[cat]) data[cat] = {};
-          data[cat][doc] = bufferTemporal[key];
-      }
-
-      bufferTemporal = {};
+      if(!categoriaActual || !docActual) return;
+      data[categoriaActual][docActual] = editor.innerHTML;
       guardarStorage();
-      alert("Todo guardado correctamente ✔");
+      alert("Documento guardado con éxito");
   }
 
   window.eliminar = function(){
+      if(!confirm("¿Estás seguro de eliminar este elemento?")) return;
       if(docActual){
           delete data[categoriaActual][docActual];
-          docActual=null;
-      }else if(categoriaActual){
+          docActual = null;
+      } else if(categoriaActual){
           delete data[categoriaActual];
-          categoriaActual=null;
+          categoriaActual = null;
       }
-      editor.style.display="none";
-      document.getElementById("toolbar").style.display="none";
+      editor.style.display = "none";
+      document.getElementById("toolbar").style.display = "none";
       guardarStorage();
-      render();
   }
 
   function guardarStorage(){
       if (currentUser) {
-          const userDocRef = doc(collection(db, 'usuarios'), currentUser.uid);
-          setDoc(userDocRef, {
+          setDoc(doc(collection(db, 'usuarios'), currentUser.uid), {
               documentos: data,
               ultimaActualizacion: new Date()
-          }, { merge: true })
-              .catch(err => console.error("Error al guardar en Firestore:", err));
+          }, { merge: true });
       }
   }
 
   window.buscarPorTitulo = function(txt){
-      const q=txt.trim().toLowerCase();
-      if(!q){
-          categoriasAbiertas={};
-          editor.style.display="none";
-          document.getElementById("toolbar").style.display="none";
-          render();
-          return;
-      }
-
-      for(const cat in data){
-          for(const doc in data[cat]){
-              if(doc.toLowerCase().includes(q)){
-                  abrir(cat,doc);
-                  return;
+      const q = txt.trim().toLowerCase();
+      if(!q) return render();
+      // Lógica de búsqueda simple
+      Object.keys(data).forEach(cat => {
+          Object.keys(data[cat]).forEach(d => {
+              if(d.toLowerCase().includes(q)) {
+                  categoriasAbiertas[cat] = true;
+                  abrir(cat, d);
               }
-          }
-      }
+          });
+      });
   }
 
-  window.cmd = function(command, value = null){
-      editor.focus();
-      document.execCommand(command, false, value);
-  }
-
-  window.insertImage = function(){
-      const url = prompt("URL de la imagen:");
-      if(url){
-          cmd('insertImage', url);
-      }
-  }
-
-  window.setFontSize = function(size){
-      if(!size) return;
-      editor.focus();
-      document.execCommand("fontSize", false, "7");
-
+  window.cmd = (c, v = null) => { editor.focus(); document.execCommand(c, false, v); }
+  window.insertImage = () => { const url = prompt("URL de la imagen:"); if(url) cmd('insertImage', url); }
+  window.setFontSize = (s) => { 
+      cmd("fontSize", "7");
       const fonts = editor.getElementsByTagName("font");
-      for(let i = 0; i < fonts.length; i++){
-          if(fonts[i].size == "7"){
-              fonts[i].removeAttribute("size");
-              fonts[i].style.fontSize = size + "px";
-          }
-      }
+      for(let f of fonts) if(f.size == "7") { f.removeAttribute("size"); f.style.fontSize = s + "px"; }
   }
 
 </script>
-
 </body>
 </html>
