@@ -4,40 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EMS Manual - Gestor de Documentos</title>
-<!-- Firebase SDK v12 - Módulos modernos -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
-  import { getFirestore, collection, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
-
-  // Configuración de Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyCyhzS4DNTraa0ALKpnncJC85sVA4vvmYQ",
-    authDomain: "base-ems.firebaseapp.com",
-    projectId: "base-ems",
-    storageBucket: "base-ems.firebasestorage.app",
-    messagingSenderId: "1029573637298",
-    appId: "1:1029573637298:web:58dc8391bda7f1f13f45ab",
-    measurementId: "G-SQXQN52J67"
-  };
-
-  // Inicializar Firebase
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-
-  // Exportar funciones globales para que el HTML pueda acceder a ellas
-  window.firebaseAuth = auth;
-  window.firebaseDb = db;
-  window.firebaseCreateUserWithEmailAndPassword = createUserWithEmailAndPassword;
-  window.firebaseSignInWithEmailAndPassword = signInWithEmailAndPassword;
-  window.firebaseSignOut = signOut;
-  window.firebaseOnAuthStateChanged = onAuthStateChanged;
-  window.firebaseCollection = collection;
-  window.firebaseDoc = doc;
-  window.firebaseSetDoc = setDoc;
-  window.firebaseOnSnapshot = onSnapshot;
-</script>
 
 <style>
 :root{
@@ -652,258 +618,266 @@ button:hover{
 </div>
 </div>
 
-<!-- SCRIPT CON FIREBASE FIRESTORE INTEGRADO -->
-<script>
+<!-- Firebase SDK v12 - Inicialización Modular -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+  import { getFirestore, collection, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-/* ========= VARIABLES DE ESTADO ========= */
-let currentUser = null;
-let data = {};
-let categoriasAbiertas = {};
-let categoriaActual = null;
-let bufferTemporal = {};
-let docActual = null;
+  // Configuración de Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyCyhzS4DNTraa0ALKpnncJC85sVA4vvmYQ",
+    authDomain: "base-ems.firebaseapp.com",
+    projectId: "base-ems",
+    storageBucket: "base-ems.firebasestorage.app",
+    messagingSenderId: "1029573637298",
+    appId: "1:1029573637298:web:58dc8391bda7f1f13f45ab",
+    measurementId: "G-SQXQN52J67"
+  };
 
-const lista = document.getElementById("lista");
-const editor = document.getElementById("editor");
+  // Inicializar Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-// Esperar a que Firebase esté inicializado
-setTimeout(() => {
-    const auth = window.firebaseAuth;
-    const db = window.firebaseDb;
+  // ========= VARIABLES DE ESTADO =========
+  let currentUser = null;
+  let data = {};
+  let categoriasAbiertas = {};
+  let categoriaActual = null;
+  let bufferTemporal = {};
+  let docActual = null;
 
-    /* ---------- AUTENTICACIÓN ---------- */
-    window.crearUsuario = function(){
-        const email = document.getElementById("emailInput").value.trim();
-        const pass = document.getElementById("passwordInput").value.trim();
-        
-        if(!email || !pass) return alert("Completa todos los campos");
-        if(pass.length < 6) return alert("La contraseña debe tener al menos 6 caracteres");
+  const lista = document.getElementById("lista");
+  const editor = document.getElementById("editor");
 
-        window.firebaseCreateUserWithEmailAndPassword(auth, email, pass)
-            .then(() => alert("Usuario registrado correctamente. Ya puedes iniciar sesión."))
-            .catch(err => alert("Error: " + err.message));
-    }
+  // ========= AUTENTICACIÓN =========
+  window.crearUsuario = function(){
+      const email = document.getElementById("emailInput").value.trim();
+      const pass = document.getElementById("passwordInput").value.trim();
+      
+      if(!email || !pass) return alert("Completa todos los campos");
+      if(pass.length < 6) return alert("La contraseña debe tener al menos 6 caracteres");
 
-    window.login = function(){
-        const email = document.getElementById("emailInput").value.trim();
-        const pass = document.getElementById("passwordInput").value.trim();
-        
-        if(!email || !pass) return alert("Completa todos los campos");
+      createUserWithEmailAndPassword(auth, email, pass)
+          .then(() => alert("Usuario registrado correctamente. Ya puedes iniciar sesión."))
+          .catch(err => {
+              console.error("Error de registro:", err);
+              alert("Error: " + err.message);
+          });
+  }
 
-        window.firebaseSignInWithEmailAndPassword(auth, email, pass)
-            .catch(err => alert("Error: " + err.message));
-    }
+  window.login = function(){
+      const email = document.getElementById("emailInput").value.trim();
+      const pass = document.getElementById("passwordInput").value.trim();
+      
+      if(!email || !pass) return alert("Completa todos los campos");
 
-    window.cerrarSesion = function(){
-        window.firebaseSignOut(auth).then(() => location.reload());
-    }
+      signInWithEmailAndPassword(auth, email, pass)
+          .catch(err => {
+              console.error("Error de login:", err);
+              alert("Error: " + err.message);
+          });
+  }
 
-    // Escuchar cambios en el estado de autenticación
-    window.firebaseOnAuthStateChanged(auth, user => {
-        if (user) {
-            currentUser = user;
-            iniciarApp(db);
-        } else {
-            currentUser = null;
-            document.getElementById("login").style.display="flex";
-            document.getElementById("app").style.display="none";
-        }
-    });
+  window.cerrarSesion = function(){
+      signOut(auth).then(() => location.reload());
+  }
 
-    function iniciarApp(db){
-        document.getElementById("login").style.display="none";
-        document.getElementById("app").style.display="block";
-        document.getElementById("nombreUsuario").textContent = currentUser.email.split('@')[0];
+  // Escuchar cambios en el estado de autenticación
+  onAuthStateChanged(auth, user => {
+      if (user) {
+          currentUser = user;
+          iniciarApp();
+      } else {
+          currentUser = null;
+          document.getElementById("login").style.display="flex";
+          document.getElementById("app").style.display="none";
+      }
+  });
 
-        // Cargar datos desde Firestore
-        const userDocRef = window.firebaseDoc(window.firebaseCollection(db, 'usuarios'), currentUser.uid);
-        window.firebaseOnSnapshot(userDocRef, (doc) => {
-            if (doc.exists()) {
-                data = doc.data().documentos || {};
-            } else {
-                data = {};
-            }
-            render();
-        }, (error) => {
-            console.error("Error al cargar documentos desde Firestore:", error);
-        });
-        
-        document.getElementById("toolbar").style.display="none";
-    }
+  function iniciarApp(){
+      document.getElementById("login").style.display="none";
+      document.getElementById("app").style.display="block";
+      document.getElementById("nombreUsuario").textContent = currentUser.email.split('@')[0];
 
-    /* ---------- RENDER ---------- */
-    window.render = function(){
-        lista.innerHTML="";
-        Object.keys(data).forEach(cat=>{
-            const c=document.createElement("div");
-            c.className="category";
+      // Cargar datos desde Firestore
+      const userDocRef = doc(collection(db, 'usuarios'), currentUser.uid);
+      onSnapshot(userDocRef, (docSnap) => {
+          if (docSnap.exists()) {
+              data = docSnap.data().documentos || {};
+          } else {
+              data = {};
+          }
+          render();
+      }, (error) => {
+          console.error("Error al cargar documentos desde Firestore:", error);
+      });
+      
+      document.getElementById("toolbar").style.display="none";
+  }
 
-            const t=document.createElement("div");
-            t.className="category-title"+(cat===categoriaActual?" active":"");
-            t.textContent=cat;
+  // ========= RENDER =========
+  window.render = function(){
+      lista.innerHTML="";
+      Object.keys(data).forEach(cat=>{
+          const c=document.createElement("div");
+          c.className="category";
 
-            t.onclick=()=>{
-                categoriaActual=cat;
-                docActual=null;
-                categoriasAbiertas[cat]=!categoriasAbiertas[cat];
-                editor.style.display="none";
-                document.getElementById("toolbar").style.display="none";
-                render();
-            };
+          const t=document.createElement("div");
+          t.className="category-title"+(cat===categoriaActual?" active":"");
+          t.textContent=cat;
 
-            c.appendChild(t);
+          t.onclick=()=>{
+              categoriaActual=cat;
+              docActual=null;
+              categoriasAbiertas[cat]=!categoriasAbiertas[cat];
+              editor.style.display="none";
+              document.getElementById("toolbar").style.display="none";
+              render();
+          };
 
-            if(categoriasAbiertas[cat]){
-                const dwrap=document.createElement("div");
-                dwrap.className="docs";
-                Object.keys(data[cat]).forEach(d=>{
-                    const doc=document.createElement("div");
-                    doc.className="doc"+(d===docActual?" active":"");
-                    doc.textContent=d;
-                    doc.onclick=()=>abrir(cat,d);
-                    dwrap.appendChild(doc);
-                });
-                c.appendChild(dwrap);
-            }
+          c.appendChild(t);
 
-            lista.appendChild(c);
-        });
-    }
+          if(categoriasAbiertas[cat]){
+              const dwrap=document.createElement("div");
+              dwrap.className="docs";
+              Object.keys(data[cat]).forEach(d=>{
+                  const doc=document.createElement("div");
+                  doc.className="doc"+(d===docActual?" active":"");
+                  doc.textContent=d;
+                  doc.onclick=()=>abrir(cat,d);
+                  dwrap.appendChild(doc);
+              });
+              c.appendChild(dwrap);
+          }
 
-    /* ---------- ACCIONES ---------- */
-    window.nuevaCategoria = function(){
-        const n=prompt("Nombre de la categoría:");
-        if(!n||data[n])return;
-        data[n]={};
-        guardarStorage(db);
-        render();
-    }
+          lista.appendChild(c);
+      });
+  }
 
-    window.nuevoDocumento = function(){
-        if(!categoriaActual)return alert("Selecciona una categoría");
-        const n=prompt("Nombre del documento:");
-        if(!n||data[categoriaActual][n])return;
-        data[categoriaActual][n]="";
-        abrir(categoriaActual,n);
-    }
+  // ========= ACCIONES =========
+  window.nuevaCategoria = function(){
+      const n=prompt("Nombre de la categoría:");
+      if(!n||data[n])return;
+      data[n]={};
+      guardarStorage();
+      render();
+  }
 
-    window.abrir = function(cat, doc){
+  window.nuevoDocumento = function(){
+      if(!categoriaActual)return alert("Selecciona una categoría");
+      const n=prompt("Nombre del documento:");
+      if(!n||data[categoriaActual][n])return;
+      data[categoriaActual][n]="";
+      abrir(categoriaActual,n);
+  }
 
-        // 🔹 Guardar temporalmente el documento anterior (SIN guardar en storage)
-        if(categoriaActual && docActual){
-            bufferTemporal[categoriaActual + "||" + docActual] = editor.innerHTML;
-        }
+  window.abrir = function(cat, doc){
+      if(categoriaActual && docActual){
+          bufferTemporal[categoriaActual + "||" + docActual] = editor.innerHTML;
+      }
 
-        categoriasAbiertas = {};
-        categoriasAbiertas[cat] = true;
-        categoriaActual = cat;
-        docActual = doc;
+      categoriasAbiertas = {};
+      categoriasAbiertas[cat] = true;
+      categoriaActual = cat;
+      docActual = doc;
 
-        editor.style.display = "block";
-        editor.contentEditable = "true";
-        const key = cat + "||" + doc;
-        editor.innerHTML = bufferTemporal[key] ?? data[cat][doc];
+      editor.style.display = "block";
+      editor.contentEditable = "true";
+      const key = cat + "||" + doc;
+      editor.innerHTML = bufferTemporal[key] ?? data[cat][doc];
 
-        document.getElementById("toolbar").style.display = "flex";
-        render();
-    }
+      document.getElementById("toolbar").style.display = "flex";
+      render();
+  }
 
-    window.guardar = function(){
+  window.guardar = function(){
+      if(categoriaActual && docActual){
+          bufferTemporal[categoriaActual + "||" + docActual] = editor.innerHTML;
+      }
 
-        // 1️⃣ Guardar el documento actual en buffer
-        if(categoriaActual && docActual){
-            bufferTemporal[categoriaActual + "||" + docActual] = editor.innerHTML;
-        }
+      for(const key in bufferTemporal){
+          const [cat, doc] = key.split("||");
+          if(!data[cat]) data[cat] = {};
+          data[cat][doc] = bufferTemporal[key];
+      }
 
-        // 2️⃣ Pasar TODO el buffer a data
-        for(const key in bufferTemporal){
-            const [cat, doc] = key.split("||");
+      bufferTemporal = {};
+      guardarStorage();
+      alert("Todo guardado correctamente ✔");
+  }
 
-            if(!data[cat]) data[cat] = {};
-            data[cat][doc] = bufferTemporal[key];
-        }
+  window.eliminar = function(){
+      if(docActual){
+          delete data[categoriaActual][docActual];
+          docActual=null;
+      }else if(categoriaActual){
+          delete data[categoriaActual];
+          categoriaActual=null;
+      }
+      editor.style.display="none";
+      document.getElementById("toolbar").style.display="none";
+      guardarStorage();
+      render();
+  }
 
-        // 3️⃣ Limpiar buffer (ya está guardado)
-        bufferTemporal = {};
+  function guardarStorage(){
+      if (currentUser) {
+          const userDocRef = doc(collection(db, 'usuarios'), currentUser.uid);
+          setDoc(userDocRef, {
+              documentos: data,
+              ultimaActualizacion: new Date()
+          }, { merge: true })
+              .catch(err => console.error("Error al guardar en Firestore:", err));
+      }
+  }
 
-        // 4️⃣ Guardar TODO en Firestore
-        guardarStorage(db);
+  window.buscarPorTitulo = function(txt){
+      const q=txt.trim().toLowerCase();
+      if(!q){
+          categoriasAbiertas={};
+          editor.style.display="none";
+          document.getElementById("toolbar").style.display="none";
+          render();
+          return;
+      }
 
-        alert("Todo guardado correctamente ✔");
-    }
+      for(const cat in data){
+          for(const doc in data[cat]){
+              if(doc.toLowerCase().includes(q)){
+                  abrir(cat,doc);
+                  return;
+              }
+          }
+      }
+  }
 
-    window.eliminar = function(){
-        if(docActual){
-            delete data[categoriaActual][docActual];
-            docActual=null;
-        }else if(categoriaActual){
-            delete data[categoriaActual];
-            categoriaActual=null;
-        }
-        editor.style.display="none";
-        document.getElementById("toolbar").style.display="none";
-        guardarStorage(db);
-        render();
-    }
+  window.cmd = function(command, value = null){
+      editor.focus();
+      document.execCommand(command, false, value);
+  }
 
-    function guardarStorage(db){
-        if (currentUser) {
-            const userDocRef = window.firebaseDoc(window.firebaseCollection(db, 'usuarios'), currentUser.uid);
-            window.firebaseSetDoc(userDocRef, {
-                documentos: data,
-                ultimaActualizacion: new Date()
-            }, { merge: true })
-                .catch(err => console.error("Error al guardar en Firestore:", err));
-        }
-    }
+  window.insertImage = function(){
+      const url = prompt("URL de la imagen:");
+      if(url){
+          cmd('insertImage', url);
+      }
+  }
 
-    window.buscarPorTitulo = function(txt){
-        const q=txt.trim().toLowerCase();
-        if(!q){
-            categoriasAbiertas={};
-            editor.style.display="none";
-            document.getElementById("toolbar").style.display="none";
-            render();
-            return;
-        }
+  window.setFontSize = function(size){
+      if(!size) return;
+      editor.focus();
+      document.execCommand("fontSize", false, "7");
 
-        for(const cat in data){
-            for(const doc in data[cat]){
-                if(doc.toLowerCase().includes(q)){
-                    abrir(cat,doc);
-                    return;
-                }
-            }
-        }
-    }
-
-    window.cmd = function(command, value = null){
-        editor.focus();
-        document.execCommand(command, false, value);
-    }
-
-    window.insertImage = function(){
-        const url = prompt("URL de la imagen:");
-        if(url){
-            cmd('insertImage', url);
-        }
-    }
-
-    window.setFontSize = function(size){
-        if(!size) return;
-        editor.focus();
-        document.execCommand("fontSize", false, "7");
-
-        const fonts = editor.getElementsByTagName("font");
-        for(let i = 0; i < fonts.length; i++){
-            if(fonts[i].size == "7"){
-                fonts[i].removeAttribute("size");
-                fonts[i].style.fontSize = size + "px";
-            }
-        }
-    }
-
-}, 1000); // Esperar 1 segundo para que Firebase esté listo
+      const fonts = editor.getElementsByTagName("font");
+      for(let i = 0; i < fonts.length; i++){
+          if(fonts[i].size == "7"){
+              fonts[i].removeAttribute("size");
+              fonts[i].style.fontSize = size + "px";
+          }
+      }
+  }
 
 </script>
 
