@@ -1072,6 +1072,49 @@ body{
       }
   }
 
+  // ========= EVENTO DE PEGADO DE IMÁGENES EN EL EDITOR =========
+  editor.addEventListener('paste', (e) => {
+      e.preventDefault();
+      
+      const items = e.clipboardData.items;
+      for (let item of items) {
+          if (item.kind === 'file' && item.type.startsWith('image/')) {
+              const file = item.getAsFile();
+              const reader = new FileReader();
+              
+              reader.onload = (event) => {
+                  const base64 = event.target.result;
+                  // Insertar la imagen como HTML en el editor
+                  const img = document.createElement('img');
+                  img.src = base64;
+                  img.style.maxWidth = '100%';
+                  img.style.height = 'auto';
+                  img.style.marginTop = '10px';
+                  img.style.marginBottom = '10px';
+                  img.style.borderRadius = '4px';
+                  
+                  // Insertar en el punto del cursor
+                  const selection = window.getSelection();
+                  if (selection.rangeCount > 0) {
+                      const range = selection.getRangeAt(0);
+                      range.insertNode(img);
+                      range.setStartAfter(img);
+                      range.collapse(true);
+                      selection.removeAllRanges();
+                      selection.addRange(range);
+                  }
+              };
+              
+              reader.readAsDataURL(file);
+          } else if (item.kind === 'string') {
+              // Si es texto, permitir pegado normal
+              item.getAsString((str) => {
+                  document.execCommand('insertText', false, str);
+              });
+          }
+      }
+  });
+
   // ========= COMANDOS DEL EDITOR (RESTAURADOS) =========
   window.cmd = (c, v = null) => { 
       editor.focus(); 
