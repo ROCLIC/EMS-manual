@@ -963,15 +963,17 @@ body{
   }
 
   function guardarStorage(){
-      if (currentUser) {
+      if (currentUser && userProfileData.nombre) {
           setDoc(doc(collection(db, 'usuarios'), currentUser.uid), {
-              nombre: userProfileData.nombre,
-              email: userProfileData.email,
-              avatarUrl: userProfileData.avatarUrl,
-              fechaRegistro: userProfileData.fechaRegistro,
-              documentos: data,
+              nombre: userProfileData.nombre || "",
+              email: userProfileData.email || currentUser.email,
+              avatarUrl: userProfileData.avatarUrl || "",
+              fechaRegistro: userProfileData.fechaRegistro || new Date(),
+              documentos: data || {},
               ultimaActualizacion: new Date()
-          }, { merge: false });
+          }, { merge: false }).catch(err => {
+              console.error("Error guardando en Firebase:", err);
+          });
       }
   }
 
