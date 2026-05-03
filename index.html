@@ -757,7 +757,7 @@ body{
                   fechaRegistro: userData.fechaRegistro
               };
               
-              const name = userData.nombre || currentUser.email.split('@')[0];
+              const name = userData.nombre ? userData.nombre : currentUser.email.split('@')[0];
               document.getElementById("nombreUsuario").textContent = name;
               document.getElementById("emailUsuario").textContent = userData.email || currentUser.email;
               
