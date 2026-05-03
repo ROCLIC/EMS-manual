@@ -509,18 +509,36 @@ body{
                     <div class="tool-sep"></div>
                     
                     <select class="tool-select" onchange="cmd('fontName', this.value)">
+                        <option value="">Fuente</option>
                         <option value="Inter">Inter</option>
                         <option value="Arial">Arial</option>
+                        <option value="Calibri">Calibri</option>
+                        <option value="Times New Roman">Times New Roman</option>
+                        <option value="Verdana">Verdana</option>
+                        <option value="Courier New">Courier New</option>
                         <option value="Georgia">Georgia</option>
-                        <option value="Courier New">Courier</option>
+                        <option value="Tahoma">Tahoma</option>
                     </select>
                     
                     <select class="tool-select" onchange="setFontSize(this.value)">
+                        <option value="">Tamaño</option>
+                        <option value="10">10px</option>
+                        <option value="12">12px</option>
                         <option value="14">14px</option>
                         <option value="16">16px</option>
                         <option value="18">18px</option>
                         <option value="24">24px</option>
+                        <option value="32">32px</option>
                     </select>
+                    
+                    <div class="tool-sep"></div>
+
+                    <input type="color" onchange="cmd('foreColor', this.value)" title="Color de texto" style="width:30px; height:30px; border:none; background:transparent; cursor:pointer;">
+                    
+                    <div class="tool-sep"></div>
+                    
+                    <button class="tool-btn" onclick="cmd('insertUnorderedList')" title="Lista con viñetas"><i class="fa-solid fa-list-ul"></i></button>
+                    <button class="tool-btn" onclick="cmd('insertOrderedList')" title="Lista numerada"><i class="fa-solid fa-list-ol"></i></button>
                     
                     <div class="tool-sep"></div>
                     
@@ -568,17 +586,19 @@ body{
   const auth = getAuth(app);
   const db = getFirestore(app);
 
+  // ========= VARIABLES DE ESTADO (RESTAURADAS) =========
   let currentUser = null;
   let data = {};
   let categoriasAbiertas = {};
   let categoriaActual = null;
   let docActual = null;
+  let bufferTemporal = {};
   let isRegisterMode = false;
 
   const lista = document.getElementById("lista");
   const editor = document.getElementById("editor");
 
-  // AUTH FUNCTIONS
+  // ========= AUTENTICACIÓN =========
   window.toggleRegister = function(){
       isRegisterMode = !isRegisterMode;
       const nameGroup = document.getElementById("nameGroup");
@@ -664,7 +684,7 @@ body{
       });
   }
 
-  // APP LOGIC
+  // ========= LÓGICA DE LA APP (RESTAURADA) =========
   window.render = function(){
       lista.innerHTML="";
       Object.keys(data).forEach(cat=>{
@@ -680,7 +700,10 @@ body{
           
           header.onclick = () => {
               categoriaActual = cat;
+              docActual = null;
               categoriasAbiertas[cat] = !categoriasAbiertas[cat];
+              editor.style.display = "none";
+              document.getElementById("toolbar").style.display = "none";
               render();
           };
           
@@ -710,6 +733,7 @@ body{
       if(!n || data[n]) return;
       data[n] = {};
       guardarStorage();
+      render();
   }
 
   window.nuevoDocumento = function(){
@@ -721,20 +745,39 @@ body{
   }
 
   window.abrir = function(cat, docName){
+      // Guardar en buffer antes de cambiar
+      if(categoriaActual && docActual){
+          bufferTemporal[categoriaActual + "||" + docActual] = editor.innerHTML;
+      }
+
       categoriaActual = cat;
       docActual = docName;
+      
       editor.style.display = "block";
       editor.contentEditable = "true";
-      editor.innerHTML = data[cat][docName] || "";
+      
+      const key = cat + "||" + docName;
+      editor.innerHTML = bufferTemporal[key] ?? data[cat][docName] ?? "";
+      
       document.getElementById("toolbar").style.display = "flex";
       render();
   }
 
   window.guardar = function(){
-      if(!categoriaActual || !docActual) return;
-      data[categoriaActual][docActual] = editor.innerHTML;
+      if(categoriaActual && docActual){
+          bufferTemporal[categoriaActual + "||" + docActual] = editor.innerHTML;
+      }
+
+      // Volcar buffer a data
+      for(const key in bufferTemporal){
+          const [cat, docName] = key.split("||");
+          if(!data[cat]) data[cat] = {};
+          data[cat][docName] = bufferTemporal[key];
+      }
+
+      bufferTemporal = {};
       guardarStorage();
-      alert("Documento guardado con éxito");
+      alert("Todo guardado correctamente ✔");
   }
 
   window.eliminar = function(){
@@ -749,6 +792,7 @@ body{
       editor.style.display = "none";
       document.getElementById("toolbar").style.display = "none";
       guardarStorage();
+      render();
   }
 
   function guardarStorage(){
@@ -762,24 +806,47 @@ body{
 
   window.buscarPorTitulo = function(txt){
       const q = txt.trim().toLowerCase();
-      if(!q) return render();
-      // Lógica de búsqueda simple
-      Object.keys(data).forEach(cat => {
-          Object.keys(data[cat]).forEach(d => {
-              if(d.toLowerCase().includes(q)) {
+      if(!q){
+          categoriasAbiertas = {};
+          editor.style.display = "none";
+          document.getElementById("toolbar").style.display = "none";
+          render();
+          return;
+      }
+
+      for(const cat in data){
+          for(const docName in data[cat]){
+              if(docName.toLowerCase().includes(q)){
                   categoriasAbiertas[cat] = true;
-                  abrir(cat, d);
+                  abrir(cat, docName);
+                  return;
               }
-          });
-      });
+          }
+      }
   }
 
-  window.cmd = (c, v = null) => { editor.focus(); document.execCommand(c, false, v); }
-  window.insertImage = () => { const url = prompt("URL de la imagen:"); if(url) cmd('insertImage', url); }
+  // ========= COMANDOS DEL EDITOR (RESTAURADOS) =========
+  window.cmd = (c, v = null) => { 
+      editor.focus(); 
+      document.execCommand(c, false, v); 
+  }
+  
+  window.insertImage = () => { 
+      const url = prompt("URL de la imagen:"); 
+      if(url) cmd('insertImage', url); 
+  }
+  
   window.setFontSize = (s) => { 
-      cmd("fontSize", "7");
+      if(!s) return;
+      editor.focus();
+      document.execCommand("fontSize", false, "7");
       const fonts = editor.getElementsByTagName("font");
-      for(let f of fonts) if(f.size == "7") { f.removeAttribute("size"); f.style.fontSize = s + "px"; }
+      for(let f of fonts) {
+          if(f.size == "7") { 
+              f.removeAttribute("size"); 
+              f.style.fontSize = s + "px"; 
+          }
+      }
   }
 
 </script>
