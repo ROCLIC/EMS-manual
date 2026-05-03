@@ -316,7 +316,17 @@ body{
 
 .user-meta{ text-align:right; }
 .user-meta h4{ font-size:14px; font-weight:700; }
-.user-meta p{ font-size:11px; color:var(--text-muted); }
+.user-meta p{ font-size:11px; color:var(--text-muted); display:none; }
+
+.avatar{
+    cursor:pointer;
+    transition:var(--transition);
+}
+
+.avatar:hover{
+    transform:scale(1.1);
+    box-shadow:0 0 20px rgba(59,130,246,0.5);
+}
 
 .avatar{
     width:40px;
@@ -328,6 +338,13 @@ body{
     align-items:center;
     font-weight:800;
     color:white;
+    background-size:cover;
+    background-position:center;
+    font-size:0;
+}
+
+.avatar-text{
+    font-size:16px;
 }
 
 .btn-logout{
@@ -542,7 +559,7 @@ body{
                         <h4 id="nombreUsuario">Usuario</h4>
                         <p id="emailUsuario">usuario@ems.com</p>
                     </div>
-                    <div class="avatar" id="userAvatar">U</div>
+                    <div class="avatar" id="userAvatar" onclick="abrirCambiarAvatar()" title="Haz clic para cambiar tu imagen"><span class="avatar-text">U</span></div>
                     <div class="btn-logout" onclick="cerrarSesion()" title="Cerrar Sesión">
                         <i class="fa-solid fa-right-from-bracket"></i>
                     </div>
@@ -738,7 +755,7 @@ body{
               const name = userData.nombre || currentUser.email.split('@')[0];
               document.getElementById("nombreUsuario").textContent = name;
               document.getElementById("emailUsuario").textContent = userData.email || currentUser.email;
-              document.getElementById("userAvatar").textContent = name.charAt(0).toUpperCase();
+              const avatarText = document.getElementById("userAvatar").querySelector(".avatar-text"); if(avatarText) avatarText.textContent = name.charAt(0).toUpperCase(); cargarAvatarGuardado(userData);
               data = userData.documentos || {};
           }
           render();
@@ -917,3 +934,52 @@ body{
 </script>
 </body>
 </html>
+
+  // ========= CAMBIAR AVATAR =========
+  window.abrirCambiarAvatar = function(){
+      const urlImagen = prompt("Pega la URL de tu imagen de perfil:");
+      if(!urlImagen || urlImagen.trim() === "") return;
+      
+      cambiarAvatar(urlImagen.trim());
+  }
+
+  window.cambiarAvatar = function(urlImagen){
+      const avatar = document.getElementById("userAvatar");
+      const avatarText = avatar.querySelector(".avatar-text");
+      
+      // Verificar que la URL sea valida
+      const img = new Image();
+      img.onload = function(){
+          // Si la imagen carga correctamente, actualizar
+          avatar.style.backgroundImage = `url('${urlImagen}')`;
+          avatarText.style.display = "none";
+          
+          // Guardar en Firebase
+          if(currentUser){
+              setDoc(doc(collection(db, 'usuarios'), currentUser.uid), {
+                  avatarUrl: urlImagen,
+                  ultimaActualizacion: new Date()
+              }, { merge: true });
+          }
+          
+          alert("Imagen de perfil actualizada correctamente ✔");
+      };
+      img.onerror = function(){
+          alert("No se pudo cargar la imagen. Verifica que la URL sea correcta.");
+      };
+      img.src = urlImagen;
+  }
+
+  // Restaurar avatar al cargar datos del usuario
+  window.cargarAvatarGuardado = function(userData){
+      const avatar = document.getElementById("userAvatar");
+      const avatarText = avatar.querySelector(".avatar-text");
+      
+      if(userData.avatarUrl){
+          avatar.style.backgroundImage = `url('${userData.avatarUrl}')`;
+          avatarText.style.display = "none";
+      } else {
+          avatar.style.backgroundImage = "";
+          avatarText.style.display = "block";
+      }
+  }
