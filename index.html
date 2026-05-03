@@ -858,7 +858,7 @@ body{
           setDoc(doc(collection(db, 'usuarios'), currentUser.uid), {
               documentos: data,
               ultimaActualizacion: new Date()
-          }, { merge: true }).then(() => {
+          }, { merge: false }).then(() => {
               render();
               alert("Categoría eliminada correctamente ✔");
           }).catch(err => {
@@ -937,7 +937,7 @@ body{
           setDoc(doc(collection(db, 'usuarios'), currentUser.uid), {
               documentos: data,
               ultimaActualizacion: new Date()
-          }, { merge: true });
+          }, { merge: false });
       }
   }
 
@@ -1144,9 +1144,10 @@ body{
           // Guardar en Firebase
           if(currentUser){
               setDoc(doc(collection(db, 'usuarios'), currentUser.uid), {
+                  documentos: data,
                   avatarUrl: urlImagen,
                   ultimaActualizacion: new Date()
-              }, { merge: true });
+              }, { merge: false });
           }
           
           alert("Imagen de perfil actualizada correctamente ✔");
@@ -1168,9 +1169,10 @@ body{
       // Guardar en Firebase
       if(currentUser){
           setDoc(doc(collection(db, 'usuarios'), currentUser.uid), {
+              documentos: data,
               avatarUrl: base64,
               ultimaActualizacion: new Date()
-          }, { merge: true });
+          }, { merge: false });
       }
       
       alert("Imagen de perfil actualizada desde el portapapeles ✔");
