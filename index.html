@@ -747,7 +747,7 @@ body{
 
   // ========= LÓGICA DE LA APP (RESTAURADA) =========
   window.render = function(){
-      lista.innerHTML="";
+      lista.innerHTML = "";
       Object.keys(data).forEach(cat=>{
           const catDiv = document.createElement("div");
           catDiv.className = "cat-item";
@@ -765,6 +765,7 @@ body{
               categoriasAbiertas[cat] = !categoriasAbiertas[cat];
               editor.style.display = "none";
               document.getElementById("toolbar").style.display = "none";
+              document.getElementById("welcomeScreen").style.display = "flex";
               render();
           };
           
