@@ -347,6 +347,55 @@ body{
     flex-direction:column;
     gap:20px;
     overflow:hidden;
+    position:relative;
+}
+
+/* WELCOME SCREEN */
+.welcome-screen{
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    background:radial-gradient(circle at center, rgba(59,130,246,0.05) 0%, transparent 70%);
+    z-index:5;
+    transition:var(--transition);
+}
+
+.welcome-content{
+    text-align:center;
+    animation:fadeInUp 0.8s ease-out;
+}
+
+.welcome-logo{
+    font-size:120px;
+    color:rgba(239,68,68,0.15);
+    margin-bottom:24px;
+    filter:drop-shadow(0 0 20px rgba(239,68,68,0.1));
+}
+
+.welcome-content h2{
+    font-family:'Montserrat', sans-serif;
+    font-size:28px;
+    color:var(--text-main);
+    margin-bottom:12px;
+    letter-spacing:1px;
+}
+
+.welcome-content p{
+    color:var(--text-muted);
+    font-size:16px;
+    max-width:400px;
+    line-height:1.6;
+}
+
+@keyframes fadeInUp{
+    from{ opacity:0; transform:translateY(20px); }
+    to{ opacity:1; transform:translateY(0); }
 }
 
 .editor-toolbar{
@@ -501,6 +550,17 @@ body{
             </header>
 
             <div class="editor-container">
+                <!-- Pantalla de Bienvenida -->
+                <div id="welcomeScreen" class="welcome-screen">
+                    <div class="welcome-content">
+                        <div class="welcome-logo">
+                            <i class="fa-solid fa-star-of-life"></i>
+                        </div>
+                        <h2>SISTEMA EMS MANUAL</h2>
+                        <p>Selecciona una categoría o crea un nuevo documento para comenzar a gestionar tu información.</p>
+                    </div>
+                </div>
+
                 <div class="editor-toolbar" id="toolbar" style="display:none">
                     <button class="tool-btn" onclick="cmd('bold')" title="Negrita"><i class="fa-solid fa-bold"></i></button>
                     <button class="tool-btn" onclick="cmd('italic')" title="Cursiva"><i class="fa-solid fa-italic"></i></button>
@@ -670,6 +730,7 @@ body{
   function iniciarApp(){
       document.getElementById("login").style.display="none";
       document.getElementById("app").style.display="block";
+      document.getElementById("welcomeScreen").style.display="flex";
 
       onSnapshot(doc(collection(db, 'usuarios'), currentUser.uid), (docSnap) => {
           if (docSnap.exists()) {
@@ -753,6 +814,8 @@ body{
       categoriaActual = cat;
       docActual = docName;
       
+      // Ocultar bienvenida y mostrar editor
+      document.getElementById("welcomeScreen").style.display = "none";
       editor.style.display = "block";
       editor.contentEditable = "true";
       
@@ -789,8 +852,9 @@ body{
           delete data[categoriaActual];
           categoriaActual = null;
       }
-      editor.style.display = "none";
-      document.getElementById("toolbar").style.display = "none";
+      editor.style.display="none";
+      document.getElementById("toolbar").style.display="none";
+      document.getElementById("welcomeScreen").style.display = "flex";
       guardarStorage();
       render();
   }
