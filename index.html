@@ -669,6 +669,7 @@ body{
   let categoriasAbiertas = {};
   let isRegisterMode = false;
   let userProfileData = {}; // Almacenar datos del perfil (nombre, avatar, etc)
+  let draggedCategory = null; // Para rastrear la categoría siendo arrastrada
 
   const lista = document.getElementById("lista");
   const editor = document.getElementById("editor");
@@ -835,9 +836,12 @@ body{
           return a.localeCompare(b); // Desempate por nombre si los tiempos son iguales
       });
 
-      categoriasOrdenadas.forEach(cat=>{
+      categoriasOrdenadas.forEach((cat, index)=>{
           const catDiv = document.createElement("div");
           catDiv.className = "cat-item";
+          catDiv.draggable = true;
+          catDiv.dataset.categoria = cat;
+          catDiv.dataset.index = index;
           
           const header = document.createElement("div");
           header.className = "cat-header" + (cat === categoriaActual ? " active" : "");
@@ -861,6 +865,42 @@ body{
               document.getElementById("welcomeScreen").style.display = "flex";
               render();
           };
+          
+          // Drag and Drop events
+          catDiv.addEventListener('dragstart', (e) => {
+              draggedCategory = cat;
+              catDiv.style.opacity = '0.5';
+              e.dataTransfer.effectAllowed = 'move';
+          });
+          
+          catDiv.addEventListener('dragover', (e) => {
+              e.preventDefault();
+              e.dataTransfer.dropEffect = 'move';
+              catDiv.style.borderTop = '3px solid var(--primary)';
+          });
+          
+          catDiv.addEventListener('dragleave', (e) => {
+              catDiv.style.borderTop = 'none';
+          });
+          
+          catDiv.addEventListener('drop', (e) => {
+              e.preventDefault();
+              catDiv.style.borderTop = 'none';
+              if (draggedCategory && draggedCategory !== cat) {
+                  const tempTime = data[draggedCategory]._timestamp;
+                  data[draggedCategory]._timestamp = data[cat]._timestamp;
+                  data[cat]._timestamp = tempTime;
+                  draggedCategory = null;
+                  guardarStorage();
+                  render();
+              }
+          });
+          
+          catDiv.addEventListener('dragend', (e) => {
+              catDiv.style.opacity = '1';
+              catDiv.style.borderTop = 'none';
+              draggedCategory = null;
+          });
           
           catDiv.appendChild(header);
 
