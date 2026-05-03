@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EMS Manual - Gestor de Documentos</title>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
 
 <style>
 :root{
@@ -545,9 +550,10 @@ button:hover{
 <div id="login" class="login">
     <div class="login-box">
         <h2>EMS Manual</h2>
-        <input id="userInput" placeholder="Nombre de usuario" type="text">
+        <input id="emailInput" placeholder="Correo electrónico" type="email">
+        <input id="passwordInput" placeholder="Contraseña" type="password">
         <button class="btn-login" onclick="login()">Iniciar sesión</button>
-        <button class="btn-create" onclick="crearUsuario()">Crear usuario</button>
+        <button class="btn-create" onclick="crearUsuario()">Registrarse</button>
     </div>
 </div>
 
@@ -622,16 +628,24 @@ button:hover{
 </div>
 </div>
 
-<!-- SCRIPT ORIGINAL, SIN CAMBIOS -->
+<!-- SCRIPT CON FIREBASE INTEGRADO -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
-/* ========= USUARIOS ========= */
-let usuarios = JSON.parse(localStorage.getItem("emsUsers")) || [];
-let usuario = localStorage.getItem("emsUserActual");
-let data = {};
+/* ========= FIREBASE INITIALIZATION ========= */
+let app, auth, db;
+try {
+    app = firebase.initializeApp(window.firebaseConfig);
+    auth = firebase.auth();
+    db = firebase.database();
+} catch (e) {
+    console.error("Error al inicializar Firebase:", e);
+    alert("Error de configuración de Firebase. Verifica firebase-config.js");
+}
 
-/* ========= APP ========= */
+/* ========= VARIABLES DE ESTADO ========= */
+let currentUser = null;
+let data = {};
 let categoriasAbiertas = {};
 let categoriaActual = null;
 let bufferTemporal = {};
@@ -640,55 +654,58 @@ let docActual = null;
 const lista = document.getElementById("lista");
 const editor = document.getElementById("editor");
 
-/* ---------- USUARIOS ---------- */
+/* ---------- AUTENTICACIÓN ---------- */
 window.crearUsuario = function(){
-    const u=document.getElementById("userInput").value.trim();
-    if(!u) return alert("Escribe un nombre");
+    const email = document.getElementById("emailInput").value.trim();
+    const pass = document.getElementById("passwordInput").value.trim();
+    
+    if(!email || !pass) return alert("Completa todos los campos");
+    if(pass.length < 6) return alert("La contraseña debe tener al menos 6 caracteres");
 
-    if(usuarios.includes(u)){
-        alert("Ese usuario ya existe");
-        return;
-    }
-
-    usuarios.push(u);
-    localStorage.setItem("emsUsers",JSON.stringify(usuarios));
-    alert("Usuario creado correctamente. Ahora inicia sesión.");
-    document.getElementById("userInput").value="";
+    auth.createUserWithEmailAndPassword(email, pass)
+        .then(() => alert("Usuario registrado correctamente. Ya puedes iniciar sesión."))
+        .catch(err => alert("Error: " + err.message));
 }
 
 window.login = function(){
-    const u=document.getElementById("userInput").value.trim();
-    if(!u) return alert("Escribe un nombre");
+    const email = document.getElementById("emailInput").value.trim();
+    const pass = document.getElementById("passwordInput").value.trim();
+    
+    if(!email || !pass) return alert("Completa todos los campos");
 
-    if(!usuarios.includes(u)){
-        alert("Usuario no existe. Debes crearlo primero.");
-        return;
-    }
-
-    localStorage.setItem("emsUserActual",u);
-    iniciarApp();
+    auth.signInWithEmailAndPassword(email, pass)
+        .catch(err => alert("Error: " + err.message));
 }
 
 window.cerrarSesion = function(){
-    bufferTemporal = {}; // ❌ se pierde lo no guardado
-    localStorage.removeItem("emsUserActual");
-    location.reload();
+    auth.signOut().then(() => location.reload());
 }
+
+// Escuchar cambios en el estado de autenticación
+auth.onAuthStateChanged(user => {
+    if (user) {
+        currentUser = user;
+        iniciarApp();
+    } else {
+        currentUser = null;
+        document.getElementById("login").style.display="flex";
+        document.getElementById("app").style.display="none";
+    }
+});
 
 function iniciarApp(){
-    usuario = localStorage.getItem("emsUserActual");
     document.getElementById("login").style.display="none";
     document.getElementById("app").style.display="block";
-    document.getElementById("nombreUsuario").textContent=usuario;
+    document.getElementById("nombreUsuario").textContent = currentUser.email.split('@')[0];
 
-    data = JSON.parse(localStorage.getItem("emsDocs_"+usuario)) || {};
-    render();
+    // Cargar datos desde Firebase
+    const userRef = db.ref('emsDocs/' + currentUser.uid);
+    userRef.on('value', (snapshot) => {
+        data = snapshot.val() || {};
+        render();
+    });
+    
     document.getElementById("toolbar").style.display="none";
-
-}
-
-if(usuario){
-    iniciarApp();
 }
 
 /* ---------- RENDER ---------- */
@@ -807,7 +824,10 @@ window.eliminar = function(){
 }
 
 function guardarStorage(){
-    localStorage.setItem("emsDocs_"+usuario,JSON.stringify(data));
+    if (currentUser) {
+        db.ref('emsDocs/' + currentUser.uid).set(data)
+            .catch(err => console.error("Error al guardar en Firebase:", err));
+    }
 }
 
 window.buscarPorTitulo = function(txt){
