@@ -774,7 +774,13 @@ body{
           header.className = "cat-header" + (cat === categoriaActual ? " active" : "");
           header.innerHTML = `
             <div class="cat-name"><i class="fa-solid ${categoriasAbiertas[cat] ? 'fa-folder-open' : 'fa-folder'}"></i> ${cat}</div>
-            <i class="fa-solid fa-chevron-${categoriasAbiertas[cat] ? 'down' : 'right'}" style="font-size:10px"></i>
+            <div class="cat-menu" style="display:flex; gap:6px; align-items:center;">
+              <button class="cat-menu-btn" onclick="renombrarCategoria('${cat.replace(/'/g, "\\'")}')
+" title="Renombrar" style="background:none; border:none; color:var(--text-muted); cursor:pointer; padding:4px 6px; border-radius:4px; transition:var(--transition);" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted)'" onclick="event.stopPropagation();"><i class="fa-solid fa-pen-to-square" style="font-size:12px"></i></button>
+              <button class="cat-menu-btn" onclick="eliminarCategoria('${cat.replace(/'/g, "\\'")}')
+" title="Eliminar" style="background:none; border:none; color:var(--text-muted); cursor:pointer; padding:4px 6px; border-radius:4px; transition:var(--transition);" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-muted)'" onclick="event.stopPropagation();"><i class="fa-solid fa-trash" style="font-size:12px"></i></button>
+              <i class="fa-solid fa-chevron-${categoriasAbiertas[cat] ? 'down' : 'right'}" style="font-size:10px"></i>
+            </div>
           `;
           
           header.onclick = () => {
@@ -814,6 +820,43 @@ body{
       data[n] = {};
       guardarStorage();
       render();
+  }
+
+  window.renombrarCategoria = function(catActual){
+      const nuevoNombre = prompt("Nuevo nombre de la categoría:", catActual);
+      if(!nuevoNombre || nuevoNombre === catActual || data[nuevoNombre]) return;
+      
+      // Copiar los documentos a la nueva categoría
+      data[nuevoNombre] = data[catActual];
+      delete data[catActual];
+      
+      // Actualizar referencias
+      if(categoriaActual === catActual) categoriaActual = nuevoNombre;
+      
+      guardarStorage();
+      render();
+      alert("Categoría renombrada correctamente ✔");
+  }
+
+  window.eliminarCategoria = function(cat){
+      const docCount = Object.keys(data[cat] || {}).length;
+      const mensaje = docCount > 0 
+          ? `Esta categoría contiene ${docCount} documento(s). ¿Estás seguro de que deseas eliminarla? Esta acción no se puede deshacer.`
+          : "¿Estás seguro de que deseas eliminar esta categoría?";
+      
+      if(!confirm(mensaje)) return;
+      
+      delete data[cat];
+      if(categoriaActual === cat) categoriaActual = null;
+      docActual = null;
+      
+      editor.style.display = "none";
+      document.getElementById("toolbar").style.display = "none";
+      document.getElementById("welcomeScreen").style.display = "flex";
+      
+      guardarStorage();
+      render();
+      alert("Categoría eliminada correctamente ✔");
   }
 
   window.nuevoDocumento = function(){
