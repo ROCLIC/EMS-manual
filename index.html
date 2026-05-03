@@ -663,10 +663,11 @@ body{
   // ========= VARIABLES DE ESTADO (RESTAURADAS) =========
   let currentUser = null;
   let data = {};
-  let categoriasAbiertas = {};
+  let bufferTemporal = {};
   let categoriaActual = null;
   let docActual = null;
-  let bufferTemporal = {};
+  let categoriasAbiertas = {};
+  let ordenCategorias = []; // Array para mantener el orden de creación
   let isRegisterMode = false;
   let userProfileData = {}; // Almacenar datos del perfil (nombre, avatar, etc)
 
@@ -757,6 +758,7 @@ body{
               const userData = initialSnap.data();
               actualizarInterfazUsuario(userData);
               data = userData.documentos || {};
+              ordenCategorias = userData.ordenCategorias || Object.keys(data);
           }
       } catch (e) { console.error("Error en carga inicial:", e); }
 
@@ -766,6 +768,7 @@ body{
               const userData = docSnap.data();
               actualizarInterfazUsuario(userData);
               data = userData.documentos || {};
+              ordenCategorias = userData.ordenCategorias || Object.keys(data);
           }
           render();
       });
@@ -807,7 +810,9 @@ body{
   // ========= LÓGICA DE LA APP (RESTAURADA) =========
   window.render = function(){
       lista.innerHTML = "";
-      Object.keys(data).forEach(cat=>{
+      // Usar el orden de categorías si existe, sino usar el orden de las claves
+      const categoriasOrdenadas = ordenCategorias.filter(cat => data[cat]) || Object.keys(data);
+      categoriasOrdenadas.forEach(cat=>{
           const catDiv = document.createElement("div");
           catDiv.className = "cat-item";
           
@@ -859,6 +864,10 @@ body{
       const n = prompt("Nombre de la nueva categoría:");
       if(!n || data[n]) return;
       data[n] = {};
+      // Añadir al array de orden
+      if (!ordenCategorias.includes(n)) {
+          ordenCategorias.push(n);
+      }
       guardarStorage();
       render();
   }
@@ -870,6 +879,12 @@ body{
       // Copiar los documentos a la nueva categoría
       data[nuevoNombre] = data[catActual];
       delete data[catActual];
+      
+      // Actualizar el orden
+      const indexOrden = ordenCategorias.indexOf(catActual);
+      if (indexOrden > -1) {
+          ordenCategorias[indexOrden] = nuevoNombre;
+      }
       
       // Actualizar referencias
       if(categoriaActual === catActual) categoriaActual = nuevoNombre;
@@ -888,6 +903,12 @@ body{
       if(!confirm(mensaje)) return;
       
       delete data[cat];
+      // Remover del array de orden
+      const indexOrden = ordenCategorias.indexOf(cat);
+      if (indexOrden > -1) {
+          ordenCategorias.splice(indexOrden, 1);
+      }
+      
       if(categoriaActual === cat) categoriaActual = null;
       docActual = null;
       
@@ -970,6 +991,7 @@ body{
               avatarUrl: userProfileData.avatarUrl || "",
               fechaRegistro: userProfileData.fechaRegistro || new Date(),
               documentos: data || {},
+              ordenCategorias: ordenCategorias || [],
               ultimaActualizacion: new Date()
           }, { merge: false }).catch(err => {
               console.error("Error guardando en Firebase:", err);
