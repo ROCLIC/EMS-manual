@@ -854,9 +854,20 @@ body{
       document.getElementById("toolbar").style.display = "none";
       document.getElementById("welcomeScreen").style.display = "flex";
       
-      guardarStorage();
-      render();
-      alert("Categoría eliminada correctamente ✔");
+      if (currentUser) {
+          setDoc(doc(collection(db, 'usuarios'), currentUser.uid), {
+              documentos: data,
+              ultimaActualizacion: new Date()
+          }, { merge: true }).then(() => {
+              render();
+              alert("Categoría eliminada correctamente ✔");
+          }).catch(err => {
+              alert("Error al eliminar: " + err.message);
+          });
+      } else {
+          render();
+          alert("Categoría eliminada correctamente ✔");
+      }
   }
 
   window.nuevoDocumento = function(){
