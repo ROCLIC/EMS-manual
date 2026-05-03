@@ -810,17 +810,29 @@ body{
       
       // Obtener todas las categorías
       const categorias = Object.keys(data);
+      let huboCambiosDeOrden = false;
       
       // Asegurarse de que todas tengan una marca de tiempo para el orden
-      categorias.forEach(cat => {
+      categorias.forEach((cat, index) => {
           if (!data[cat]._timestamp) {
-              data[cat]._timestamp = Date.now();
+              // Asignar una marca de tiempo basada en su posición actual + un pequeño delay
+              // para que al menos mantengan el orden que tienen en este momento
+              data[cat]._timestamp = Date.now() + index;
+              huboCambiosDeOrden = true;
           }
       });
 
+      // Si asignamos marcas de tiempo nuevas, guardarlas permanentemente en Firebase
+      if (huboCambiosDeOrden) {
+          guardarStorage();
+      }
+
       // Ordenar por marca de tiempo (la más antigua primero)
       const categoriasOrdenadas = categorias.sort((a, b) => {
-          return (data[a]._timestamp || 0) - (data[b]._timestamp || 0);
+          const timeA = data[a]._timestamp || 0;
+          const timeB = data[b]._timestamp || 0;
+          if (timeA !== timeB) return timeA - timeB;
+          return a.localeCompare(b); // Desempate por nombre si los tiempos son iguales
       });
 
       categoriasOrdenadas.forEach(cat=>{
