@@ -321,14 +321,6 @@ body{
 .avatar{
     cursor:pointer;
     transition:var(--transition);
-}
-
-.avatar:hover{
-    transform:scale(1.1);
-    box-shadow:0 0 20px rgba(59,130,246,0.5);
-}
-
-.avatar{
     width:40px;
     height:40px;
     border-radius:10px;
@@ -341,6 +333,11 @@ body{
     background-size:cover;
     background-position:center;
     font-size:0;
+}
+
+.avatar:hover{
+    transform:scale(1.1);
+    box-shadow:0 0 20px rgba(59,130,246,0.5);
 }
 
 .avatar-text{
@@ -755,7 +752,11 @@ body{
               const name = userData.nombre || currentUser.email.split('@')[0];
               document.getElementById("nombreUsuario").textContent = name;
               document.getElementById("emailUsuario").textContent = userData.email || currentUser.email;
-              const avatarText = document.getElementById("userAvatar").querySelector(".avatar-text"); if(avatarText) avatarText.textContent = name.charAt(0).toUpperCase(); cargarAvatarGuardado(userData);
+              
+              const avatarText = document.getElementById("userAvatar").querySelector(".avatar-text"); 
+              if(avatarText) avatarText.textContent = name.charAt(0).toUpperCase(); 
+              cargarAvatarGuardado(userData);
+              
               data = userData.documentos || {};
           }
           render();
@@ -931,10 +932,6 @@ body{
       }
   }
 
-</script>
-</body>
-</html>
-
   // ========= CAMBIAR AVATAR =========
   window.abrirCambiarAvatar = function(){
       const urlImagen = prompt("Pega la URL de tu imagen de perfil:");
@@ -983,3 +980,7 @@ body{
           avatarText.style.display = "block";
       }
   }
+
+</script>
+</body>
+</html>
