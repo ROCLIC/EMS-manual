@@ -772,10 +772,16 @@ body{
   }
 
   function actualizarInterfazUsuario(userData) {
-      // Asegurar que el nombre siempre tenga un valor válido
-      const nombreValido = (userData.nombre && typeof userData.nombre === 'string' && userData.nombre.trim() !== "") 
-          ? userData.nombre.trim() 
-          : currentUser.email.split('@')[0];
+      // PRIORIDAD 1: Leer de localStorage (respaldo más rápido)
+      const nombreLocal = localStorage.getItem(`ems_username_${currentUser.uid}`);
+      
+      // PRIORIDAD 2: Si no hay en localStorage, usar Firebase
+      // PRIORIDAD 3: Si tampoco hay en Firebase, usar email
+      const nombreValido = nombreLocal 
+          ? nombreLocal 
+          : (userData.nombre && typeof userData.nombre === 'string' && userData.nombre.trim() !== "") 
+              ? userData.nombre.trim() 
+              : currentUser.email.split('@')[0];
       
       userProfileData = {
           nombre: nombreValido,
@@ -783,6 +789,11 @@ body{
           avatarUrl: userData.avatarUrl,
           fechaRegistro: userData.fechaRegistro
       };
+      
+      // Guardar en localStorage si no estaba
+      if (!nombreLocal && nombreValido !== currentUser.email.split('@')[0]) {
+          localStorage.setItem(`ems_username_${currentUser.uid}`, nombreValido);
+      }
       
       const name = nombreValido;
       document.getElementById("nombreUsuario").textContent = name;
@@ -1023,6 +1034,9 @@ body{
       document.getElementById("nombreUsuario").textContent = nombreLimpio;
       const avatarText = document.getElementById("userAvatar").querySelector(".avatar-text");
       if(avatarText) avatarText.textContent = nombreLimpio.charAt(0).toUpperCase();
+      
+      // RESPALDO INMEDIATO: Guardar en localStorage
+      localStorage.setItem(`ems_username_${currentUser.uid}`, nombreLimpio);
       
       // Guardar en Firebase
       if(currentUser){
