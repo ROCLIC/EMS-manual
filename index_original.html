@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EMS Manual - Gestor de Documentos</title>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
 
 <style>
 :root{
@@ -623,267 +628,254 @@ button:hover{
 </div>
 </div>
 
-<!-- Firebase SDK v12 - Inicialización Modular -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
-  import { getFirestore, collection, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+<!-- SCRIPT CON FIREBASE INTEGRADO -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
 
-  // Configuración de Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyCyhzS4DNTraa0ALKpnncJC85sVA4vvmYQ",
-    authDomain: "base-ems.firebaseapp.com",
-    projectId: "base-ems",
-    storageBucket: "base-ems.firebasestorage.app",
-    messagingSenderId: "1029573637298",
-    appId: "1:1029573637298:web:58dc8391bda7f1f13f45ab",
-    measurementId: "G-SQXQN52J67"
-  };
+/* ========= FIREBASE INITIALIZATION ========= */
+let app, auth, db;
+try {
+    app = firebase.initializeApp(window.firebaseConfig);
+    auth = firebase.auth();
+    db = firebase.database();
+} catch (e) {
+    console.error("Error al inicializar Firebase:", e);
+    alert("Error de configuración de Firebase. Verifica firebase-config.js");
+}
 
-  // Inicializar Firebase
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+/* ========= VARIABLES DE ESTADO ========= */
+let currentUser = null;
+let data = {};
+let categoriasAbiertas = {};
+let categoriaActual = null;
+let bufferTemporal = {};
+let docActual = null;
 
-  // ========= VARIABLES DE ESTADO =========
-  let currentUser = null;
-  let data = {};
-  let categoriasAbiertas = {};
-  let categoriaActual = null;
-  let bufferTemporal = {};
-  let docActual = null;
+const lista = document.getElementById("lista");
+const editor = document.getElementById("editor");
 
-  const lista = document.getElementById("lista");
-  const editor = document.getElementById("editor");
+/* ---------- AUTENTICACIÓN ---------- */
+window.crearUsuario = function(){
+    const email = document.getElementById("emailInput").value.trim();
+    const pass = document.getElementById("passwordInput").value.trim();
+    
+    if(!email || !pass) return alert("Completa todos los campos");
+    if(pass.length < 6) return alert("La contraseña debe tener al menos 6 caracteres");
 
-  // ========= AUTENTICACIÓN =========
-  window.crearUsuario = function(){
-      const email = document.getElementById("emailInput").value.trim();
-      const pass = document.getElementById("passwordInput").value.trim();
-      
-      if(!email || !pass) return alert("Completa todos los campos");
-      if(pass.length < 6) return alert("La contraseña debe tener al menos 6 caracteres");
+    auth.createUserWithEmailAndPassword(email, pass)
+        .then(() => alert("Usuario registrado correctamente. Ya puedes iniciar sesión."))
+        .catch(err => alert("Error: " + err.message));
+}
 
-      createUserWithEmailAndPassword(auth, email, pass)
-          .then(() => alert("Usuario registrado correctamente. Ya puedes iniciar sesión."))
-          .catch(err => {
-              console.error("Error de registro:", err);
-              alert("Error: " + err.message);
-          });
-  }
+window.login = function(){
+    const email = document.getElementById("emailInput").value.trim();
+    const pass = document.getElementById("passwordInput").value.trim();
+    
+    if(!email || !pass) return alert("Completa todos los campos");
 
-  window.login = function(){
-      const email = document.getElementById("emailInput").value.trim();
-      const pass = document.getElementById("passwordInput").value.trim();
-      
-      if(!email || !pass) return alert("Completa todos los campos");
+    auth.signInWithEmailAndPassword(email, pass)
+        .catch(err => alert("Error: " + err.message));
+}
 
-      signInWithEmailAndPassword(auth, email, pass)
-          .catch(err => {
-              console.error("Error de login:", err);
-              alert("Error: " + err.message);
-          });
-  }
+window.cerrarSesion = function(){
+    auth.signOut().then(() => location.reload());
+}
 
-  window.cerrarSesion = function(){
-      signOut(auth).then(() => location.reload());
-  }
+// Escuchar cambios en el estado de autenticación
+auth.onAuthStateChanged(user => {
+    if (user) {
+        currentUser = user;
+        iniciarApp();
+    } else {
+        currentUser = null;
+        document.getElementById("login").style.display="flex";
+        document.getElementById("app").style.display="none";
+    }
+});
 
-  // Escuchar cambios en el estado de autenticación
-  onAuthStateChanged(auth, user => {
-      if (user) {
-          currentUser = user;
-          iniciarApp();
-      } else {
-          currentUser = null;
-          document.getElementById("login").style.display="flex";
-          document.getElementById("app").style.display="none";
-      }
-  });
+function iniciarApp(){
+    document.getElementById("login").style.display="none";
+    document.getElementById("app").style.display="block";
+    document.getElementById("nombreUsuario").textContent = currentUser.email.split('@')[0];
 
-  function iniciarApp(){
-      document.getElementById("login").style.display="none";
-      document.getElementById("app").style.display="block";
-      document.getElementById("nombreUsuario").textContent = currentUser.email.split('@')[0];
+    // Cargar datos desde Firebase
+    const userRef = db.ref('emsDocs/' + currentUser.uid);
+    userRef.on('value', (snapshot) => {
+        data = snapshot.val() || {};
+        render();
+    });
+    
+    document.getElementById("toolbar").style.display="none";
+}
 
-      // Cargar datos desde Firestore
-      const userDocRef = doc(collection(db, 'usuarios'), currentUser.uid);
-      onSnapshot(userDocRef, (docSnap) => {
-          if (docSnap.exists()) {
-              data = docSnap.data().documentos || {};
-          } else {
-              data = {};
-          }
-          render();
-      }, (error) => {
-          console.error("Error al cargar documentos desde Firestore:", error);
-      });
-      
-      document.getElementById("toolbar").style.display="none";
-  }
+/* ---------- RENDER ---------- */
+function render(){
+    lista.innerHTML="";
+    Object.keys(data).forEach(cat=>{
+        const c=document.createElement("div");
+        c.className="category";
 
-  // ========= RENDER =========
-  window.render = function(){
-      lista.innerHTML="";
-      Object.keys(data).forEach(cat=>{
-          const c=document.createElement("div");
-          c.className="category";
+        const t=document.createElement("div");
+        t.className="category-title"+(cat===categoriaActual?" active":"");
+        t.textContent=cat;
 
-          const t=document.createElement("div");
-          t.className="category-title"+(cat===categoriaActual?" active":"");
-          t.textContent=cat;
+        t.onclick=()=>{
+            categoriaActual=cat;
+            docActual=null;
+            categoriasAbiertas[cat]=!categoriasAbiertas[cat];
+            editor.style.display="none";
+            document.getElementById("toolbar").style.display="none";
+            render();
+        };
 
-          t.onclick=()=>{
-              categoriaActual=cat;
-              docActual=null;
-              categoriasAbiertas[cat]=!categoriasAbiertas[cat];
-              editor.style.display="none";
-              document.getElementById("toolbar").style.display="none";
-              render();
-          };
+        c.appendChild(t);
 
-          c.appendChild(t);
+        if(categoriasAbiertas[cat]){
+            const dwrap=document.createElement("div");
+            dwrap.className="docs";
+            Object.keys(data[cat]).forEach(d=>{
+                const doc=document.createElement("div");
+                doc.className="doc"+(d===docActual?" active":"");
+                doc.textContent=d;
+                doc.onclick=()=>abrir(cat,d);
+                dwrap.appendChild(doc);
+            });
+            c.appendChild(dwrap);
+        }
 
-          if(categoriasAbiertas[cat]){
-              const dwrap=document.createElement("div");
-              dwrap.className="docs";
-              Object.keys(data[cat]).forEach(d=>{
-                  const doc=document.createElement("div");
-                  doc.className="doc"+(d===docActual?" active":"");
-                  doc.textContent=d;
-                  doc.onclick=()=>abrir(cat,d);
-                  dwrap.appendChild(doc);
-              });
-              c.appendChild(dwrap);
-          }
+        lista.appendChild(c);
+    });
+}
 
-          lista.appendChild(c);
-      });
-  }
+/* ---------- ACCIONES ---------- */
+window.nuevaCategoria = function(){
+    const n=prompt("Nombre de la categoría:");
+    if(!n||data[n])return;
+    data[n]={};
+    guardarStorage();
+    render();
+}
 
-  // ========= ACCIONES =========
-  window.nuevaCategoria = function(){
-      const n=prompt("Nombre de la categoría:");
-      if(!n||data[n])return;
-      data[n]={};
-      guardarStorage();
-      render();
-  }
+window.nuevoDocumento = function(){
+    if(!categoriaActual)return alert("Selecciona una categoría");
+    const n=prompt("Nombre del documento:");
+    if(!n||data[categoriaActual][n])return;
+    data[categoriaActual][n]="";
+    abrir(categoriaActual,n);
+}
 
-  window.nuevoDocumento = function(){
-      if(!categoriaActual)return alert("Selecciona una categoría");
-      const n=prompt("Nombre del documento:");
-      if(!n||data[categoriaActual][n])return;
-      data[categoriaActual][n]="";
-      abrir(categoriaActual,n);
-  }
+function abrir(cat, doc){
 
-  window.abrir = function(cat, doc){
-      if(categoriaActual && docActual){
-          bufferTemporal[categoriaActual + "||" + docActual] = editor.innerHTML;
-      }
+    // 🔹 Guardar temporalmente el documento anterior (SIN guardar en storage)
+    if(categoriaActual && docActual){
+        bufferTemporal[categoriaActual + "||" + docActual] = editor.innerHTML;
+    }
 
-      categoriasAbiertas = {};
-      categoriasAbiertas[cat] = true;
-      categoriaActual = cat;
-      docActual = doc;
+    categoriasAbiertas = {};
+    categoriasAbiertas[cat] = true;
+    categoriaActual = cat;
+    docActual = doc;
 
-      editor.style.display = "block";
-      editor.contentEditable = "true";
-      const key = cat + "||" + doc;
-      editor.innerHTML = bufferTemporal[key] ?? data[cat][doc];
+    editor.style.display = "block";
+    editor.contentEditable = "true";
+    const key = cat + "||" + doc;
+    editor.innerHTML = bufferTemporal[key] ?? data[cat][doc];
 
-      document.getElementById("toolbar").style.display = "flex";
-      render();
-  }
+    document.getElementById("toolbar").style.display = "flex";
+    render();
+}
 
-  window.guardar = function(){
-      if(categoriaActual && docActual){
-          bufferTemporal[categoriaActual + "||" + docActual] = editor.innerHTML;
-      }
+window.guardar = function(){
 
-      for(const key in bufferTemporal){
-          const [cat, doc] = key.split("||");
-          if(!data[cat]) data[cat] = {};
-          data[cat][doc] = bufferTemporal[key];
-      }
+    // 1️⃣ Guardar el documento actual en buffer
+    if(categoriaActual && docActual){
+        bufferTemporal[categoriaActual + "||" + docActual] = editor.innerHTML;
+    }
 
-      bufferTemporal = {};
-      guardarStorage();
-      alert("Todo guardado correctamente ✔");
-  }
+    // 2️⃣ Pasar TODO el buffer a data
+    for(const key in bufferTemporal){
+        const [cat, doc] = key.split("||");
 
-  window.eliminar = function(){
-      if(docActual){
-          delete data[categoriaActual][docActual];
-          docActual=null;
-      }else if(categoriaActual){
-          delete data[categoriaActual];
-          categoriaActual=null;
-      }
-      editor.style.display="none";
-      document.getElementById("toolbar").style.display="none";
-      guardarStorage();
-      render();
-  }
+        if(!data[cat]) data[cat] = {};
+        data[cat][doc] = bufferTemporal[key];
+    }
 
-  function guardarStorage(){
-      if (currentUser) {
-          const userDocRef = doc(collection(db, 'usuarios'), currentUser.uid);
-          setDoc(userDocRef, {
-              documentos: data,
-              ultimaActualizacion: new Date()
-          }, { merge: true })
-              .catch(err => console.error("Error al guardar en Firestore:", err));
-      }
-  }
+    // 3️⃣ Limpiar buffer (ya está guardado)
+    bufferTemporal = {};
 
-  window.buscarPorTitulo = function(txt){
-      const q=txt.trim().toLowerCase();
-      if(!q){
-          categoriasAbiertas={};
-          editor.style.display="none";
-          document.getElementById("toolbar").style.display="none";
-          render();
-          return;
-      }
+    // 4️⃣ Guardar TODO en localStorage
+    guardarStorage();
 
-      for(const cat in data){
-          for(const doc in data[cat]){
-              if(doc.toLowerCase().includes(q)){
-                  abrir(cat,doc);
-                  return;
-              }
-          }
-      }
-  }
+    alert("Todo guardado correctamente ✔");
+}
 
-  window.cmd = function(command, value = null){
-      editor.focus();
-      document.execCommand(command, false, value);
-  }
+window.eliminar = function(){
+    if(docActual){
+        delete data[categoriaActual][docActual];
+        docActual=null;
+    }else if(categoriaActual){
+        delete data[categoriaActual];
+        categoriaActual=null;
+    }
+    editor.style.display="none";
+    document.getElementById("toolbar").style.display="none";
+    guardarStorage();
+    render();
+}
 
-  window.insertImage = function(){
-      const url = prompt("URL de la imagen:");
-      if(url){
-          cmd('insertImage', url);
-      }
-  }
+function guardarStorage(){
+    if (currentUser) {
+        db.ref('emsDocs/' + currentUser.uid).set(data)
+            .catch(err => console.error("Error al guardar en Firebase:", err));
+    }
+}
 
-  window.setFontSize = function(size){
-      if(!size) return;
-      editor.focus();
-      document.execCommand("fontSize", false, "7");
+window.buscarPorTitulo = function(txt){
+    const q=txt.trim().toLowerCase();
+    if(!q){
+        categoriasAbiertas={};
+        editor.style.display="none";
+        document.getElementById("toolbar").style.display="none";
+        render();
+        return;
+    }
 
-      const fonts = editor.getElementsByTagName("font");
-      for(let i = 0; i < fonts.length; i++){
-          if(fonts[i].size == "7"){
-              fonts[i].removeAttribute("size");
-              fonts[i].style.fontSize = size + "px";
-          }
-      }
-  }
+    for(const cat in data){
+        for(const doc in data[cat]){
+            if(doc.toLowerCase().includes(q)){
+                abrir(cat,doc);
+                return;
+            }
+        }
+    }
+}
+window.cmd = function(command, value = null){
+    editor.focus();
+    document.execCommand(command, false, value);
+}
 
+window.insertImage = function(){
+    const url = prompt("URL de la imagen:");
+    if(url){
+        cmd('insertImage', url);
+    }
+}
+
+window.setFontSize = function(size){
+    if(!size) return;
+    editor.focus();
+    document.execCommand("fontSize", false, "7");
+
+    const fonts = editor.getElementsByTagName("font");
+    for(let i = 0; i < fonts.length; i++){
+        if(fonts[i].size == "7"){
+            fonts[i].removeAttribute("size");
+            fonts[i].style.fontSize = size + "px";
+        }
+    }
+}
+
+});
 </script>
 
 </body>
