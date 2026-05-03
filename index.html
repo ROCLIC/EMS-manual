@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EMS Manual - Gestor de Documentos</title>
-<!-- Firebase SDK -->
+<!-- Firebase SDK - Versión 9+ con Firestore -->
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
 
 <style>
@@ -129,11 +129,6 @@ body{
 
 .login-box button:hover::before{
     left:100%;
-}
-
-.login-box button:hover{
-    transform:translateY(-2px);
-    box-shadow:0 8px 20px rgba(0,0,0,.3);
 }
 
 .btn-login{
@@ -628,7 +623,7 @@ button:hover{
 </div>
 </div>
 
-<!-- SCRIPT CON FIREBASE INTEGRADO -->
+<!-- SCRIPT CON FIREBASE FIRESTORE INTEGRADO -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -637,7 +632,7 @@ let app, auth, db;
 try {
     app = firebase.initializeApp(window.firebaseConfig);
     auth = firebase.auth();
-    db = firebase.database();
+    db = firebase.firestore();
 } catch (e) {
     console.error("Error al inicializar Firebase:", e);
     alert("Error de configuración de Firebase. Verifica firebase-config.js");
@@ -698,11 +693,17 @@ function iniciarApp(){
     document.getElementById("app").style.display="block";
     document.getElementById("nombreUsuario").textContent = currentUser.email.split('@')[0];
 
-    // Cargar datos desde Firebase
-    const userRef = db.ref('emsDocs/' + currentUser.uid);
-    userRef.on('value', (snapshot) => {
-        data = snapshot.val() || {};
+    // Cargar datos desde Firestore
+    const userDocRef = db.collection('usuarios').doc(currentUser.uid);
+    userDocRef.onSnapshot((doc) => {
+        if (doc.exists) {
+            data = doc.data().documentos || {};
+        } else {
+            data = {};
+        }
         render();
+    }, (error) => {
+        console.error("Error al cargar documentos desde Firestore:", error);
     });
     
     document.getElementById("toolbar").style.display="none";
@@ -803,7 +804,7 @@ window.guardar = function(){
     // 3️⃣ Limpiar buffer (ya está guardado)
     bufferTemporal = {};
 
-    // 4️⃣ Guardar TODO en localStorage
+    // 4️⃣ Guardar TODO en Firestore
     guardarStorage();
 
     alert("Todo guardado correctamente ✔");
@@ -825,8 +826,12 @@ window.eliminar = function(){
 
 function guardarStorage(){
     if (currentUser) {
-        db.ref('emsDocs/' + currentUser.uid).set(data)
-            .catch(err => console.error("Error al guardar en Firebase:", err));
+        const userDocRef = db.collection('usuarios').doc(currentUser.uid);
+        userDocRef.set({
+            documentos: data,
+            ultimaActualizacion: new Date()
+        }, { merge: true })
+            .catch(err => console.error("Error al guardar en Firestore:", err));
     }
 }
 
@@ -849,6 +854,7 @@ window.buscarPorTitulo = function(txt){
         }
     }
 }
+
 window.cmd = function(command, value = null){
     editor.focus();
     document.execCommand(command, false, value);
