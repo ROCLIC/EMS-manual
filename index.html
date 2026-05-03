@@ -719,6 +719,8 @@ body{
   let isRegisterMode = false;
   let userProfileData = {}; // Almacenar datos del perfil (nombre, avatar, etc)
   let draggedCategory = null; // Para rastrear la categoría siendo arrastrada
+  let draggedDocument = null; // Para rastrear el documento siendo arrastrado
+  let draggedDocumentSourceCat = null; // Para rastrear la categoría origen del documento
 
   const lista = document.getElementById("lista");
   const editor = document.getElementById("editor");
@@ -956,15 +958,92 @@ body{
           if(categoriasAbiertas[cat]){
               const dList = document.createElement("div");
               dList.className = "doc-list";
-              Object.keys(data[cat]).forEach(d => {
-                  if (d === "_timestamp") return; // No mostrar el campo de orden
+              
+              // Obtener documentos de la categoría
+              const documentos = Object.keys(data[cat]).filter(k => k !== "_timestamp");
+              
+              // Asegurar que tengan timestamp para ordenación
+              documentos.forEach((doc, idx) => {
+                  // Si es string (formato antiguo), convertir a objeto con timestamp al abrir o procesar
+                  // Para el renderizado, solo nos interesa el timestamp si existe
+                  if (data[cat][doc] && typeof data[cat][doc] === 'object' && !data[cat][doc]._timestamp) {
+                      data[cat][doc]._timestamp = Date.now() + idx;
+                  } else if (typeof data[cat][doc] === 'string') {
+                      // No convertimos aquí para no ensuciar, pero permitimos la lógica de orden
+                  }
+              });
+
+              // Ordenar documentos
+              const docsOrdenados = documentos.sort((a, b) => {
+                  const valA = (data[cat][a] && data[cat][a]._timestamp) ? data[cat][a]._timestamp : 0;
+                  const valB = (data[cat][b] && data[cat][b]._timestamp) ? data[cat][b]._timestamp : 0;
+                  if (valA !== valB) return valA - valB;
+                  return a.localeCompare(b);
+              });
+
+              docsOrdenados.forEach(d => {
                   const dItem = document.createElement("div");
                   dItem.className = "doc-item" + (d === docActual ? " active" : "");
+                  dItem.draggable = true;
                   dItem.innerHTML = `<i class="fa-solid fa-file-lines"></i> ${d}`;
+                  
                   dItem.onclick = (e) => {
                       e.stopPropagation();
                       abrir(cat, d);
                   };
+
+                  // Document Drag Events
+                  dItem.addEventListener('dragstart', (e) => {
+                      e.stopPropagation();
+                      draggedDocument = d;
+                      draggedDocumentSourceCat = cat;
+                      dItem.style.opacity = '0.5';
+                  });
+
+                  dItem.addEventListener('dragover', (e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (draggedDocumentSourceCat === cat) {
+                          dItem.style.borderTop = '2px solid var(--primary)';
+                      }
+                  });
+
+                  dItem.addEventListener('dragleave', (e) => {
+                      dItem.style.borderTop = 'none';
+                  });
+
+                  dItem.addEventListener('drop', (e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      dItem.style.borderTop = 'none';
+                      
+                      if (draggedDocument && draggedDocumentSourceCat === cat && draggedDocument !== d) {
+                          // Asegurar que ambos sean objetos para tener timestamp
+                          if (typeof data[cat][draggedDocument] === 'string') {
+                              data[cat][draggedDocument] = { content: data[cat][draggedDocument], _timestamp: Date.now() };
+                          }
+                          if (typeof data[cat][d] === 'string') {
+                              data[cat][d] = { content: data[cat][d], _timestamp: Date.now() + 1 };
+                          }
+
+                          const tempTime = data[cat][draggedDocument]._timestamp;
+                          data[cat][draggedDocument]._timestamp = data[cat][d]._timestamp;
+                          data[cat][d]._timestamp = tempTime;
+                          
+                          draggedDocument = null;
+                          draggedDocumentSourceCat = null;
+                          guardarStorage();
+                          render();
+                      }
+                  });
+
+                  dItem.addEventListener('dragend', (e) => {
+                      dItem.style.opacity = '1';
+                      dItem.style.borderTop = 'none';
+                      draggedDocument = null;
+                      draggedDocumentSourceCat = null;
+                  });
+
                   dList.appendChild(dItem);
               });
               catDiv.appendChild(dList);
@@ -1046,7 +1125,11 @@ body{
       editor.contentEditable = "true";
       
       const key = cat + "||" + docName;
-      editor.innerHTML = bufferTemporal[key] ?? data[cat][docName] ?? "";
+      let contenido = bufferTemporal[key] ?? data[cat][docName] ?? "";
+      if (typeof contenido === 'object' && contenido !== null) {
+          contenido = contenido.content || "";
+      }
+      editor.innerHTML = contenido;
       
       // Inicializar interactividad para imágenes cargadas
       editor.querySelectorAll('.img-wrapper').forEach(wrapper => {
@@ -1072,7 +1155,17 @@ body{
       for(const key in bufferTemporal){
           const [cat, docName] = key.split("||");
           if(!data[cat]) data[cat] = {};
-          data[cat][docName] = bufferTemporal[key];
+          
+          // Mantener el timestamp si ya existe
+          const oldData = data[cat][docName];
+          if (typeof oldData === 'object' && oldData !== null && oldData._timestamp) {
+              data[cat][docName] = {
+                  content: bufferTemporal[key],
+                  _timestamp: oldData._timestamp
+              };
+          } else {
+              data[cat][docName] = bufferTemporal[key];
+          }
       }
 
       bufferTemporal = {};
