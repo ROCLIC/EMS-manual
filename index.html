@@ -758,7 +758,12 @@ body{
               const userData = initialSnap.data();
               actualizarInterfazUsuario(userData);
               data = userData.documentos || {};
-              ordenCategorias = userData.ordenCategorias || Object.keys(data);
+              // Cargar el orden de categorías desde Firebase, o crear uno nuevo
+              if (userData.ordenCategorias && Array.isArray(userData.ordenCategorias) && userData.ordenCategorias.length > 0) {
+                  ordenCategorias = userData.ordenCategorias;
+              } else {
+                  ordenCategorias = Object.keys(data);
+              }
           }
       } catch (e) { console.error("Error en carga inicial:", e); }
 
@@ -768,7 +773,13 @@ body{
               const userData = docSnap.data();
               actualizarInterfazUsuario(userData);
               data = userData.documentos || {};
-              ordenCategorias = userData.ordenCategorias || Object.keys(data);
+              // Actualizar el orden de categorías solo si viene de Firebase y es válido
+              if (userData.ordenCategorias && Array.isArray(userData.ordenCategorias) && userData.ordenCategorias.length > 0) {
+                  ordenCategorias = userData.ordenCategorias;
+              } else if (ordenCategorias.length === 0) {
+                  // Si no hay orden guardado, crear uno nuevo
+                  ordenCategorias = Object.keys(data);
+              }
           }
           render();
       });
@@ -811,7 +822,20 @@ body{
   window.render = function(){
       lista.innerHTML = "";
       // Usar el orden de categorías si existe, sino usar el orden de las claves
-      const categoriasOrdenadas = ordenCategorias.filter(cat => data[cat]) || Object.keys(data);
+      let categoriasOrdenadas;
+      if (ordenCategorias && ordenCategorias.length > 0) {
+          // Filtrar solo las categorías que existen en data
+          categoriasOrdenadas = ordenCategorias.filter(cat => data[cat]);
+          // Si hay categorías en data que no están en el orden, añadirlas al final
+          const categoriasEnData = Object.keys(data);
+          categoriasEnData.forEach(cat => {
+              if (!categoriasOrdenadas.includes(cat)) {
+                  categoriasOrdenadas.push(cat);
+              }
+          });
+      } else {
+          categoriasOrdenadas = Object.keys(data);
+      }
       categoriasOrdenadas.forEach(cat=>{
           const catDiv = document.createElement("div");
           catDiv.className = "cat-item";
