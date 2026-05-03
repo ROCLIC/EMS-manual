@@ -772,14 +772,19 @@ body{
   }
 
   function actualizarInterfazUsuario(userData) {
+      // Asegurar que el nombre siempre tenga un valor válido
+      const nombreValido = (userData.nombre && typeof userData.nombre === 'string' && userData.nombre.trim() !== "") 
+          ? userData.nombre.trim() 
+          : currentUser.email.split('@')[0];
+      
       userProfileData = {
-          nombre: userData.nombre,
+          nombre: nombreValido,
           email: userData.email,
           avatarUrl: userData.avatarUrl,
           fechaRegistro: userData.fechaRegistro
       };
       
-      const name = (userData.nombre && userData.nombre.trim() !== "") ? userData.nombre : currentUser.email.split('@')[0];
+      const name = nombreValido;
       document.getElementById("nombreUsuario").textContent = name;
       document.getElementById("emailUsuario").textContent = userData.email || currentUser.email;
       
