@@ -668,6 +668,7 @@ body{
   let docActual = null;
   let bufferTemporal = {};
   let isRegisterMode = false;
+  let userProfileData = {}; // Almacenar datos del perfil (nombre, avatar, etc)
 
   const lista = document.getElementById("lista");
   const editor = document.getElementById("editor");
@@ -749,6 +750,13 @@ body{
       onSnapshot(doc(collection(db, 'usuarios'), currentUser.uid), (docSnap) => {
           if (docSnap.exists()) {
               const userData = docSnap.data();
+              userProfileData = {
+                  nombre: userData.nombre,
+                  email: userData.email,
+                  avatarUrl: userData.avatarUrl,
+                  fechaRegistro: userData.fechaRegistro
+              };
+              
               const name = userData.nombre || currentUser.email.split('@')[0];
               document.getElementById("nombreUsuario").textContent = name;
               document.getElementById("emailUsuario").textContent = userData.email || currentUser.email;
@@ -854,20 +862,9 @@ body{
       document.getElementById("toolbar").style.display = "none";
       document.getElementById("welcomeScreen").style.display = "flex";
       
-      if (currentUser) {
-          setDoc(doc(collection(db, 'usuarios'), currentUser.uid), {
-              documentos: data,
-              ultimaActualizacion: new Date()
-          }, { merge: false }).then(() => {
-              render();
-              alert("Categoría eliminada correctamente ✔");
-          }).catch(err => {
-              alert("Error al eliminar: " + err.message);
-          });
-      } else {
-          render();
-          alert("Categoría eliminada correctamente ✔");
-      }
+      guardarStorage();
+      render();
+      alert("Categoría eliminada correctamente ✔");
   }
 
   window.nuevoDocumento = function(){
@@ -935,6 +932,10 @@ body{
   function guardarStorage(){
       if (currentUser) {
           setDoc(doc(collection(db, 'usuarios'), currentUser.uid), {
+              nombre: userProfileData.nombre,
+              email: userProfileData.email,
+              avatarUrl: userProfileData.avatarUrl,
+              fechaRegistro: userProfileData.fechaRegistro,
               documentos: data,
               ultimaActualizacion: new Date()
           }, { merge: false });
@@ -1143,9 +1144,13 @@ body{
           
           // Guardar en Firebase
           if(currentUser){
+              userProfileData.avatarUrl = urlImagen;
               setDoc(doc(collection(db, 'usuarios'), currentUser.uid), {
-                  documentos: data,
+                  nombre: userProfileData.nombre,
+                  email: userProfileData.email,
                   avatarUrl: urlImagen,
+                  fechaRegistro: userProfileData.fechaRegistro,
+                  documentos: data,
                   ultimaActualizacion: new Date()
               }, { merge: false });
           }
@@ -1168,9 +1173,13 @@ body{
       
       // Guardar en Firebase
       if(currentUser){
+          userProfileData.avatarUrl = base64;
           setDoc(doc(collection(db, 'usuarios'), currentUser.uid), {
-              documentos: data,
+              nombre: userProfileData.nombre,
+              email: userProfileData.email,
               avatarUrl: base64,
+              fechaRegistro: userProfileData.fechaRegistro,
+              documentos: data,
               ultimaActualizacion: new Date()
           }, { merge: false });
       }
