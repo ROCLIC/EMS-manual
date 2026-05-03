@@ -661,8 +661,8 @@ button{
         </div>
         
         <div class="button-group">
-            <button class="btn-login" onclick="login()">Iniciar Sesión</button>
-            <button class="btn-create" onclick="toggleRegister()">Registrarse</button>
+            <button id="mainBtn" class="btn-login" onclick="handleAuth()">Iniciar Sesión</button>
+            <button id="toggleBtn" class="btn-create" onclick="toggleRegister()">Registrarse</button>
         </div>
     </div>
 </div>
@@ -779,15 +779,23 @@ button{
   window.toggleRegister = function(){
       isRegisterMode = !isRegisterMode;
       const nameGroup = document.getElementById("nameGroup");
-      const btn = event.target;
+      const mainBtn = document.getElementById("mainBtn");
+      const toggleBtn = document.getElementById("toggleBtn");
       
       if(isRegisterMode){
           nameGroup.style.display = "block";
-          btn.textContent = "Volver";
+          mainBtn.textContent = "Crear Cuenta";
+          toggleBtn.textContent = "Volver";
       } else {
           nameGroup.style.display = "none";
-          btn.textContent = "Registrarse";
+          mainBtn.textContent = "Iniciar Sesión";
+          toggleBtn.textContent = "Registrarse";
       }
+  }
+
+  window.handleAuth = function(){
+      if(isRegisterMode) crearUsuario();
+      else login();
   }
 
   window.crearUsuario = function(){
@@ -801,7 +809,6 @@ button{
       createUserWithEmailAndPassword(auth, email, pass)
           .then((userCredential) => {
               const user = userCredential.user;
-              // Guardar nombre personalizado en Firestore
               const userDocRef = doc(collection(db, 'usuarios'), user.uid);
               setDoc(userDocRef, {
                   nombre: name,
@@ -810,12 +817,7 @@ button{
                   fechaRegistro: new Date()
               })
               .then(() => {
-                  alert("Usuario registrado correctamente. Ya puedes iniciar sesión.");
-                  isRegisterMode = false;
-                  document.getElementById("nameGroup").style.display = "none";
-                  document.getElementById("emailInput").value = "";
-                  document.getElementById("passwordInput").value = "";
-                  document.getElementById("nameInput").value = "";
+                  // No alert, entrada directa por onAuthStateChanged
               })
               .catch(err => alert("Error al guardar datos: " + err.message));
           })
