@@ -667,7 +667,6 @@ body{
   let categoriaActual = null;
   let docActual = null;
   let categoriasAbiertas = {};
-  let ordenCategorias = []; // Array para mantener el orden de creación
   let isRegisterMode = false;
   let userProfileData = {}; // Almacenar datos del perfil (nombre, avatar, etc)
 
@@ -758,12 +757,6 @@ body{
               const userData = initialSnap.data();
               actualizarInterfazUsuario(userData);
               data = userData.documentos || {};
-              // Cargar el orden de categorías desde Firebase, o crear uno nuevo
-              if (userData.ordenCategorias && Array.isArray(userData.ordenCategorias) && userData.ordenCategorias.length > 0) {
-                  ordenCategorias = userData.ordenCategorias;
-              } else {
-                  ordenCategorias = Object.keys(data);
-              }
           }
       } catch (e) { console.error("Error en carga inicial:", e); }
 
@@ -773,13 +766,6 @@ body{
               const userData = docSnap.data();
               actualizarInterfazUsuario(userData);
               data = userData.documentos || {};
-              // Actualizar el orden de categorías solo si viene de Firebase y es válido
-              if (userData.ordenCategorias && Array.isArray(userData.ordenCategorias) && userData.ordenCategorias.length > 0) {
-                  ordenCategorias = userData.ordenCategorias;
-              } else if (ordenCategorias.length === 0) {
-                  // Si no hay orden guardado, crear uno nuevo
-                  ordenCategorias = Object.keys(data);
-              }
           }
           render();
       });
@@ -821,21 +807,22 @@ body{
   // ========= LÓGICA DE LA APP (RESTAURADA) =========
   window.render = function(){
       lista.innerHTML = "";
-      // Usar el orden de categorías si existe, sino usar el orden de las claves
-      let categoriasOrdenadas;
-      if (ordenCategorias && ordenCategorias.length > 0) {
-          // Filtrar solo las categorías que existen en data
-          categoriasOrdenadas = ordenCategorias.filter(cat => data[cat]);
-          // Si hay categorías en data que no están en el orden, añadirlas al final
-          const categoriasEnData = Object.keys(data);
-          categoriasEnData.forEach(cat => {
-              if (!categoriasOrdenadas.includes(cat)) {
-                  categoriasOrdenadas.push(cat);
-              }
-          });
-      } else {
-          categoriasOrdenadas = Object.keys(data);
-      }
+      
+      // Obtener todas las categorías
+      const categorias = Object.keys(data);
+      
+      // Asegurarse de que todas tengan una marca de tiempo para el orden
+      categorias.forEach(cat => {
+          if (!data[cat]._timestamp) {
+              data[cat]._timestamp = Date.now();
+          }
+      });
+
+      // Ordenar por marca de tiempo (la más antigua primero)
+      const categoriasOrdenadas = categorias.sort((a, b) => {
+          return (data[a]._timestamp || 0) - (data[b]._timestamp || 0);
+      });
+
       categoriasOrdenadas.forEach(cat=>{
           const catDiv = document.createElement("div");
           catDiv.className = "cat-item";
@@ -869,6 +856,7 @@ body{
               const dList = document.createElement("div");
               dList.className = "doc-list";
               Object.keys(data[cat]).forEach(d => {
+                  if (d === "_timestamp") return; // No mostrar el campo de orden
                   const dItem = document.createElement("div");
                   dItem.className = "doc-item" + (d === docActual ? " active" : "");
                   dItem.innerHTML = `<i class="fa-solid fa-file-lines"></i> ${d}`;
@@ -887,11 +875,10 @@ body{
   window.nuevaCategoria = function(){
       const n = prompt("Nombre de la nueva categoría:");
       if(!n || data[n]) return;
-      data[n] = {};
-      // Añadir al array de orden
-      if (!ordenCategorias.includes(n)) {
-          ordenCategorias.push(n);
-      }
+      // Crear categoría con marca de tiempo para el orden
+      data[n] = {
+          _timestamp: Date.now()
+      };
       guardarStorage();
       render();
   }
@@ -900,15 +887,9 @@ body{
       const nuevoNombre = prompt("Nuevo nombre de la categoría:", catActual);
       if(!nuevoNombre || nuevoNombre === catActual || data[nuevoNombre]) return;
       
-      // Copiar los documentos a la nueva categoría
+      // Copiar los documentos y la marca de tiempo a la nueva categoría
       data[nuevoNombre] = data[catActual];
       delete data[catActual];
-      
-      // Actualizar el orden
-      const indexOrden = ordenCategorias.indexOf(catActual);
-      if (indexOrden > -1) {
-          ordenCategorias[indexOrden] = nuevoNombre;
-      }
       
       // Actualizar referencias
       if(categoriaActual === catActual) categoriaActual = nuevoNombre;
@@ -919,7 +900,8 @@ body{
   }
 
   window.eliminarCategoria = function(cat){
-      const docCount = Object.keys(data[cat] || {}).length;
+      // Contar documentos ignorando el campo _timestamp
+      const docCount = Object.keys(data[cat] || {}).filter(k => k !== "_timestamp").length;
       const mensaje = docCount > 0 
           ? `Esta categoría contiene ${docCount} documento(s). ¿Estás seguro de que deseas eliminarla? Esta acción no se puede deshacer.`
           : "¿Estás seguro de que deseas eliminar esta categoría?";
@@ -927,11 +909,6 @@ body{
       if(!confirm(mensaje)) return;
       
       delete data[cat];
-      // Remover del array de orden
-      const indexOrden = ordenCategorias.indexOf(cat);
-      if (indexOrden > -1) {
-          ordenCategorias.splice(indexOrden, 1);
-      }
       
       if(categoriaActual === cat) categoriaActual = null;
       docActual = null;
@@ -1015,7 +992,6 @@ body{
               avatarUrl: userProfileData.avatarUrl || "",
               fechaRegistro: userProfileData.fechaRegistro || new Date(),
               documentos: data || {},
-              ordenCategorias: ordenCategorias || [],
               ultimaActualizacion: new Date()
           }, { merge: false }).catch(err => {
               console.error("Error guardando en Firebase:", err);
