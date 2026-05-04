@@ -349,6 +349,33 @@ body{
     box-shadow:0 0 20px rgba(59,130,246,0.5);
 }
 
+/* Previsualización de avatar en tamaño normal */
+.avatar-preview {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    width: 200px;
+    height: 200px;
+    background-color: var(--bg-card);
+    border: 2px solid var(--primary);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    z-index: 1000;
+    display: none;
+    background-size: cover;
+    background-position: center;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.user-profile:hover .avatar-preview {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 .avatar-text{
     font-size:16px;
 }
@@ -487,9 +514,9 @@ body{
     position: relative;
     margin: 10px;
     line-height: 0;
-    user-select: none;
+    user-select: auto;
     -webkit-user-drag: none;
-    cursor: grab;
+    cursor: default;
     transition: box-shadow 0.2s;
     border: 2px solid transparent;
 }
@@ -649,7 +676,10 @@ body{
                         <h4 id="nombreUsuario" onclick="cambiarNombreUsuario()" style="cursor: pointer; transition: var(--transition);" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'" title="Haz clic para cambiar tu nombre">Usuario</h4>
                         <p id="emailUsuario">usuario@ems.com</p>
                     </div>
-                    <div class="avatar" id="userAvatar" onclick="abrirCambiarAvatar()" title="Haz clic para cambiar tu imagen"><span class="avatar-text">U</span></div>
+                    <div style="position: relative;">
+                        <div class="avatar" id="userAvatar" onclick="abrirCambiarAvatar()" title="Haz clic para cambiar tu imagen"><span class="avatar-text">U</span></div>
+                        <div id="avatarPreview" class="avatar-preview"></div>
+                    </div>
                     <div class="btn-logout" onclick="cerrarSesion()" title="Cerrar Sesión">
                         <i class="fa-solid fa-right-from-bracket"></i>
                     </div>
@@ -1643,11 +1673,13 @@ body{
 
   window.cambiarAvatar = function(urlImagen){
       const avatar = document.getElementById("userAvatar");
+      const avatarPreview = document.getElementById("avatarPreview");
       const avatarText = avatar.querySelector(".avatar-text");
       
       const img = new Image();
       img.onload = function(){
           avatar.style.backgroundImage = `url('${urlImagen}')`;
+          if(avatarPreview) avatarPreview.style.backgroundImage = `url('${urlImagen}')`;
           if(avatarText) avatarText.style.display = "none";
           
           if(currentUser){
@@ -1668,9 +1700,11 @@ body{
 
   window.cambiarAvatarBase64 = function(base64){
       const avatar = document.getElementById("userAvatar");
+      const avatarPreview = document.getElementById("avatarPreview");
       const avatarText = avatar.querySelector(".avatar-text");
       
       avatar.style.backgroundImage = `url('${base64}')`;
+      if(avatarPreview) avatarPreview.style.backgroundImage = `url('${base64}')`;
       if(avatarText) avatarText.style.display = "none";
       
       if(currentUser){
@@ -1686,13 +1720,16 @@ body{
 
   window.cargarAvatarGuardado = function(userData){
       const avatar = document.getElementById("userAvatar");
+      const avatarPreview = document.getElementById("avatarPreview");
       const avatarText = avatar.querySelector(".avatar-text");
       
       if(userData && userData.avatarUrl){
           avatar.style.backgroundImage = `url('${userData.avatarUrl}')`;
+          if(avatarPreview) avatarPreview.style.backgroundImage = `url('${userData.avatarUrl}')`;
           if(avatarText) avatarText.style.display = "none";
       } else {
           avatar.style.backgroundImage = "";
+          if(avatarPreview) avatarPreview.style.backgroundImage = "";
           if(avatarText) avatarText.style.display = "block";
       }
   }
