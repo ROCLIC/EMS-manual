@@ -353,8 +353,8 @@ body{
 .avatar-preview {
     position: fixed;
     top: 50%;
-    right: 40px;
-    transform: translateY(-50%);
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: 420px;
     height: 420px;
     background-color: var(--bg-card);
@@ -365,12 +365,30 @@ body{
     display: none;
     background-size: cover;
     background-position: center;
+    background-repeat: no-repeat;
     animation: fadeIn 0.3s ease-out;
     pointer-events: auto;
+    overflow: hidden;
+    font-size: inherit;
 }
 
 .user-profile:hover .avatar-preview {
     display: block;
+}
+
+/* Responsive para avatar-preview */
+@media (max-width: 768px) {
+    .avatar-preview {
+        width: 300px;
+        height: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    .avatar-preview {
+        width: 250px;
+        height: 250px;
+    }
 }
 
 @keyframes fadeIn {
