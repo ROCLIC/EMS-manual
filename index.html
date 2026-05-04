@@ -333,6 +333,15 @@ body{
     background-size:cover;
     background-position:center;
     font-size:0;
+    overflow:hidden;
+    position:relative;
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 .avatar:hover{
@@ -527,16 +536,18 @@ body{
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) scale(0.5);
-    max-width: 80vw;
-    max-height: 80vh;
-    background: rgba(0, 0, 0, 0.9);
-    border: 3px solid var(--primary);
+    width: auto;
+    height: auto;
+    max-width: 60vw;
+    max-height: 70vh;
+    background: rgba(15, 20, 25, 0.95);
+    border: 2px solid var(--primary);
     border-radius: 12px;
     z-index: 10000;
     pointer-events: none;
     opacity: 0;
-    transition: opacity 0.3s, transform 0.3s;
-    box-shadow: 0 0 50px rgba(0,0,0,0.8);
+    transition: opacity 0.2s, transform 0.2s;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.9);
     overflow: hidden;
     display: flex;
     justify-content: center;
@@ -1274,11 +1285,11 @@ body{
       // Funcionalidad de vista previa al pasar el mouse
       let previewTimeout;
       wrapper.addEventListener('mouseenter', () => {
-          if (activeImage === wrapper) return; // No mostrar si está siendo editada
+          if (activeImage === wrapper) return;
           previewTimeout = setTimeout(() => {
               previewImg.src = img.src;
               previewOverlay.classList.add('active');
-          }, 500); // 0.5 segundos de espera
+          }, 300); // Reducido a 0.3 segundos para más agilidad
       });
 
       wrapper.addEventListener('mouseleave', () => {
@@ -1634,22 +1645,15 @@ body{
       const avatar = document.getElementById("userAvatar");
       const avatarText = avatar.querySelector(".avatar-text");
       
-      // Verificar que la URL sea valida
       const img = new Image();
       img.onload = function(){
-          // Si la imagen carga correctamente, actualizar
           avatar.style.backgroundImage = `url('${urlImagen}')`;
           if(avatarText) avatarText.style.display = "none";
           
-          // Guardar en Firebase
           if(currentUser){
               userProfileData.avatarUrl = urlImagen;
               setDoc(doc(collection(db, 'usuarios'), currentUser.uid), {
-                  nombre: userProfileData.nombre || "",
-                  email: userProfileData.email || "",
                   avatarUrl: urlImagen,
-                  fechaRegistro: userProfileData.fechaRegistro || new Date(),
-                  documentos: data,
                   ultimaActualizacion: new Date()
               }, { merge: true }).then(() => {
                   alert("Imagen de perfil actualizada correctamente ✔");
@@ -1666,37 +1670,30 @@ body{
       const avatar = document.getElementById("userAvatar");
       const avatarText = avatar.querySelector(".avatar-text");
       
-      // Actualizar vista previa
       avatar.style.backgroundImage = `url('${base64}')`;
       if(avatarText) avatarText.style.display = "none";
       
-      // Guardar en Firebase
       if(currentUser){
           userProfileData.avatarUrl = base64;
           setDoc(doc(collection(db, 'usuarios'), currentUser.uid), {
-              nombre: userProfileData.nombre || "",
-              email: userProfileData.email || "",
               avatarUrl: base64,
-              fechaRegistro: userProfileData.fechaRegistro || new Date(),
-              documentos: data,
               ultimaActualizacion: new Date()
           }, { merge: true }).then(() => {
-              alert("Imagen de perfil actualizada desde el portapapeles ✔");
+              alert("Imagen de perfil actualizada ✔");
           });
       }
   }
 
-  // Restaurar avatar al cargar datos del usuario
   window.cargarAvatarGuardado = function(userData){
       const avatar = document.getElementById("userAvatar");
       const avatarText = avatar.querySelector(".avatar-text");
       
-      if(userData.avatarUrl){
+      if(userData && userData.avatarUrl){
           avatar.style.backgroundImage = `url('${userData.avatarUrl}')`;
-          avatarText.style.display = "none";
+          if(avatarText) avatarText.style.display = "none";
       } else {
           avatar.style.backgroundImage = "";
-          avatarText.style.display = "block";
+          if(avatarText) avatarText.style.display = "block";
       }
   }
 
