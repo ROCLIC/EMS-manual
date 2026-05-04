@@ -467,6 +467,7 @@ body{
     gap:20px;
     overflow:hidden;
     position:relative;
+    min-height:0;
 }
 
 /* WELCOME SCREEN */
@@ -572,6 +573,8 @@ body{
     line-height:1.8;
     outline:none;
     scroll-behavior:smooth;
+    -webkit-overflow-scrolling:touch;
+    will-change:scroll-position;
 }
 
 .editor-paper::-webkit-scrollbar{
