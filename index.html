@@ -215,10 +215,38 @@ body{
 .nav-section{
     flex:1;
     overflow-y:auto;
+    overflow-x:hidden;
+    padding-right:8px;
+    scroll-behavior:smooth;
 }
 
-.nav-section::-webkit-scrollbar{ width:4px; }
-.nav-section::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.1); border-radius:10px; }
+.nav-section::-webkit-scrollbar{
+    width:8px;
+}
+
+.nav-section::-webkit-scrollbar-track{
+    background:rgba(255,255,255,0.05);
+    border-radius:10px;
+    margin:8px 0;
+}
+
+.nav-section::-webkit-scrollbar-thumb{
+    background:linear-gradient(to bottom, rgba(59,130,246,0.6), rgba(16,185,129,0.6));
+    border-radius:10px;
+    border:2px solid rgba(255,255,255,0.05);
+    transition:var(--transition);
+}
+
+.nav-section::-webkit-scrollbar-thumb:hover{
+    background:linear-gradient(to bottom, rgba(59,130,246,0.9), rgba(16,185,129,0.9));
+    box-shadow:0 0 10px rgba(59,130,246,0.3);
+}
+
+/* Para Firefox */
+.nav-section{
+    scrollbar-width:thin;
+    scrollbar-color:rgba(59,130,246,0.6) rgba(255,255,255,0.05);
+}
 
 .sidebar-btn{
     width:100%;
