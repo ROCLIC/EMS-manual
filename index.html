@@ -468,6 +468,7 @@ body{
     overflow:hidden;
     position:relative;
     min-height:0;
+    height: calc(100vh - 80px); /* Altura fija restando la top-bar */
 }
 
 /* WELCOME SCREEN */
@@ -484,6 +485,13 @@ body{
     background:radial-gradient(circle at center, rgba(59,130,246,0.12) 0%, transparent 70%);
     z-index:5;
     transition:var(--transition);
+    pointer-events: auto;
+}
+
+.welcome-screen.hidden {
+    display: none !important;
+    pointer-events: none !important;
+    z-index: -1 !important;
 }
 
 .welcome-content{
@@ -1087,9 +1095,10 @@ body{
               categoriaActual = cat;
               docActual = null;
               categoriasAbiertas[cat] = !categoriasAbiertas[cat];
-              editor.style.display = "none";
-              document.getElementById("toolbar").style.display = "none";
-              document.getElementById("welcomeScreen").style.display = "flex";
+	      editor.style.display = "none";
+	      document.getElementById("toolbar").style.display = "none";
+	      document.getElementById("welcomeScreen").classList.remove("hidden");
+	      document.getElementById("welcomeScreen").style.display = "flex";
               render();
           };
           
@@ -1295,9 +1304,9 @@ body{
       categoriaActual = cat;
       docActual = docName;
       
-      // Ocultar bienvenida y mostrar editor
-      document.getElementById("welcomeScreen").style.display = "none";
-      editor.style.display = "block";
+	      // Ocultar bienvenida y mostrar editor
+	      document.getElementById("welcomeScreen").classList.add("hidden");
+	      editor.style.display = "block";
       editor.contentEditable = "true";
       
       const key = cat + "||" + docName;
@@ -1588,14 +1597,20 @@ body{
   });
 
   // ========= SOPORTE DE SCROLL CON MOUSE WHEEL =========
-  editor.addEventListener('wheel', (e) => {
-      if (editor.scrollHeight > editor.clientHeight) {
-          // Si hay contenido para scrollear, nos aseguramos de que el evento no se bloquee
-          // y forzamos el desplazamiento si es necesario
-          editor.scrollTop += e.deltaY;
-          // No prevenimos el default a menos que queramos bloquear el scroll del body (que ya está bloqueado)
+  // Función para forzar el scroll si el navegador lo bloquea
+  const forceScroll = (e) => {
+      // Buscamos el elemento bajo el mouse que debería scrollear
+      const target = editor;
+      if (target && (target.scrollHeight > target.clientHeight)) {
+          target.scrollTop += e.deltaY;
+          // Si estamos dentro del editor, evitamos que el scroll afecte a otros elementos
+          if (e.cancelable) e.preventDefault();
       }
-  }, { passive: true });
+  };
+
+  // Aplicar a nivel de contenedor para capturar eventos que podrían ser bloqueados por hijos
+  document.querySelector('.editor-container').addEventListener('wheel', forceScroll, { passive: false });
+  editor.addEventListener('wheel', forceScroll, { passive: false });
 
   // ========= COMANDOS DEL EDITOR (RESTAURADOS) =========
   window.cmd = (c, v = null) => { 
