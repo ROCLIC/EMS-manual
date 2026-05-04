@@ -521,6 +521,39 @@ body{
 .handle-sw { bottom: -6px; left: -6px; cursor: sw-resize; }
 .handle-se { bottom: -6px; right: -6px; cursor: se-resize; }
 
+/* VISTA PREVIA DE IMAGEN AL PASAR EL MOUSE */
+.img-preview-overlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+    max-width: 80vw;
+    max-height: 80vh;
+    background: rgba(0, 0, 0, 0.9);
+    border: 3px solid var(--primary);
+    border-radius: 12px;
+    z-index: 10000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    box-shadow: 0 0 50px rgba(0,0,0,0.8);
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.img-preview-overlay.active {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.img-preview-overlay img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
 /* RESPONSIVE */
 @media (max-width: 1024px) {
     .app-container { grid-template-columns: 1fr; }
@@ -1227,8 +1260,32 @@ body{
 
   // ========= EVENTO DE PEGADO DE IMÁGENES EN EL EDITOR =========
   let activeImage = null;
+  
+  // Crear el overlay para la vista previa una sola vez
+  const previewOverlay = document.createElement('div');
+  previewOverlay.className = 'img-preview-overlay';
+  previewOverlay.innerHTML = '<img src="" alt="Preview">';
+  document.body.appendChild(previewOverlay);
+  const previewImg = previewOverlay.querySelector('img');
 
   function setupImageInteractivity(wrapper) {
+      const img = wrapper.querySelector('img');
+      
+      // Funcionalidad de vista previa al pasar el mouse
+      let previewTimeout;
+      wrapper.addEventListener('mouseenter', () => {
+          if (activeImage === wrapper) return; // No mostrar si está siendo editada
+          previewTimeout = setTimeout(() => {
+              previewImg.src = img.src;
+              previewOverlay.classList.add('active');
+          }, 500); // 0.5 segundos de espera
+      });
+
+      wrapper.addEventListener('mouseleave', () => {
+          clearTimeout(previewTimeout);
+          previewOverlay.classList.remove('active');
+      });
+
       const handles = ['nw', 'ne', 'sw', 'se'];
       handles.forEach(pos => {
           const handle = document.createElement('div');
@@ -1582,22 +1639,22 @@ body{
       img.onload = function(){
           // Si la imagen carga correctamente, actualizar
           avatar.style.backgroundImage = `url('${urlImagen}')`;
-          avatarText.style.display = "none";
+          if(avatarText) avatarText.style.display = "none";
           
           // Guardar en Firebase
           if(currentUser){
               userProfileData.avatarUrl = urlImagen;
               setDoc(doc(collection(db, 'usuarios'), currentUser.uid), {
-                  nombre: userProfileData.nombre,
-                  email: userProfileData.email,
+                  nombre: userProfileData.nombre || "",
+                  email: userProfileData.email || "",
                   avatarUrl: urlImagen,
-                  fechaRegistro: userProfileData.fechaRegistro,
+                  fechaRegistro: userProfileData.fechaRegistro || new Date(),
                   documentos: data,
                   ultimaActualizacion: new Date()
-              }, { merge: false });
+              }, { merge: true }).then(() => {
+                  alert("Imagen de perfil actualizada correctamente ✔");
+              });
           }
-          
-          alert("Imagen de perfil actualizada correctamente ✔");
       };
       img.onerror = function(){
           alert("No se pudo cargar la imagen. Verifica que la URL sea correcta.");
@@ -1611,22 +1668,22 @@ body{
       
       // Actualizar vista previa
       avatar.style.backgroundImage = `url('${base64}')`;
-      avatarText.style.display = "none";
+      if(avatarText) avatarText.style.display = "none";
       
       // Guardar en Firebase
       if(currentUser){
           userProfileData.avatarUrl = base64;
           setDoc(doc(collection(db, 'usuarios'), currentUser.uid), {
-              nombre: userProfileData.nombre,
-              email: userProfileData.email,
+              nombre: userProfileData.nombre || "",
+              email: userProfileData.email || "",
               avatarUrl: base64,
-              fechaRegistro: userProfileData.fechaRegistro,
+              fechaRegistro: userProfileData.fechaRegistro || new Date(),
               documentos: data,
               ultimaActualizacion: new Date()
-          }, { merge: false });
+          }, { merge: true }).then(() => {
+              alert("Imagen de perfil actualizada desde el portapapeles ✔");
+          });
       }
-      
-      alert("Imagen de perfil actualizada desde el portapapeles ✔");
   }
 
   // Restaurar avatar al cargar datos del usuario
