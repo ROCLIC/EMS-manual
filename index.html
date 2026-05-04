@@ -309,6 +309,8 @@ body{
     display:flex;
     flex-direction:column;
     background:#0f1419;
+    height: 100vh;
+    overflow: hidden;
 }
 
 .top-bar{
@@ -468,7 +470,6 @@ body{
     overflow:hidden;
     position:relative;
     min-height:0;
-    height: calc(100vh - 80px); /* Altura fija restando la top-bar */
 }
 
 /* WELCOME SCREEN */
@@ -574,7 +575,7 @@ body{
     border-radius:16px;
     border:1px solid rgba(59,130,246,0.2);
     padding:40px;
-    overflow-y:auto !important;
+    overflow-y:auto;
     overflow-x:hidden;
     box-shadow:0 10px 30px rgba(0,0,0,0.3), inset 0 0 20px rgba(59,130,246,0.05);
     font-size:16px;
@@ -582,9 +583,6 @@ body{
     outline:none;
     scroll-behavior:smooth;
     -webkit-overflow-scrolling:touch;
-    will-change:scroll-position;
-    pointer-events: auto;
-    z-index: 10;
 }
 
 .editor-paper::-webkit-scrollbar{
@@ -1597,20 +1595,7 @@ body{
   });
 
   // ========= SOPORTE DE SCROLL CON MOUSE WHEEL =========
-  // Función para forzar el scroll si el navegador lo bloquea
-  const forceScroll = (e) => {
-      // Buscamos el elemento bajo el mouse que debería scrollear
-      const target = editor;
-      if (target && (target.scrollHeight > target.clientHeight)) {
-          target.scrollTop += e.deltaY;
-          // Si estamos dentro del editor, evitamos que el scroll afecte a otros elementos
-          if (e.cancelable) e.preventDefault();
-      }
-  };
-
-  // Aplicar a nivel de contenedor para capturar eventos que podrían ser bloqueados por hijos
-  document.querySelector('.editor-container').addEventListener('wheel', forceScroll, { passive: false });
-  editor.addEventListener('wheel', forceScroll, { passive: false });
+  // El scroll ahora es manejado nativamente por el navegador gracias a la reestructuración del layout CSS.
 
   // ========= COMANDOS DEL EDITOR (RESTAURADOS) =========
   window.cmd = (c, v = null) => { 
