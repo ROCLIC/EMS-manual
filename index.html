@@ -1367,9 +1367,10 @@ body{
           delete data[categoriaActual];
           categoriaActual = null;
       }
-      editor.style.display="none";
-      document.getElementById("toolbar").style.display="none";
-      document.getElementById("welcomeScreen").style.display = "flex";
+	      editor.style.display="none";
+	      document.getElementById("toolbar").style.display="none";
+	      document.getElementById("welcomeScreen").classList.remove("hidden");
+	      document.getElementById("welcomeScreen").style.display = "flex";
       guardarStorage();
       render();
   }
@@ -1392,10 +1393,12 @@ body{
   window.buscarPorTitulo = function(txt){
       const q = txt.trim().toLowerCase();
       if(!q){
-          categoriasAbiertas = {};
-          editor.style.display = "none";
-          document.getElementById("toolbar").style.display = "none";
-          render();
+	          categoriasAbiertas = {};
+	          editor.style.display = "none";
+	          document.getElementById("toolbar").style.display = "none";
+	          document.getElementById("welcomeScreen").classList.remove("hidden");
+	          document.getElementById("welcomeScreen").style.display = "flex";
+	          render();
           return;
       }
 
