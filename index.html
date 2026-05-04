@@ -191,6 +191,8 @@ body{
     display:flex;
     flex-direction:column;
     padding:24px;
+    height:100vh;
+    overflow:hidden;
 }
 
 .app-logo{
@@ -216,36 +218,35 @@ body{
     flex:1;
     overflow-y:auto;
     overflow-x:hidden;
-    padding-right:8px;
+    min-height:0;
+    padding-right:12px;
     scroll-behavior:smooth;
+    margin-right:-12px;
 }
 
 .nav-section::-webkit-scrollbar{
-    width:8px;
+    width:10px;
 }
 
 .nav-section::-webkit-scrollbar-track{
-    background:rgba(255,255,255,0.05);
-    border-radius:10px;
-    margin:8px 0;
+    background:transparent;
 }
 
 .nav-section::-webkit-scrollbar-thumb{
-    background:linear-gradient(to bottom, rgba(59,130,246,0.6), rgba(16,185,129,0.6));
-    border-radius:10px;
-    border:2px solid rgba(255,255,255,0.05);
-    transition:var(--transition);
+    background:linear-gradient(to bottom, rgba(59,130,246,0.7), rgba(16,185,129,0.7));
+    border-radius:8px;
+    min-height:40px;
 }
 
 .nav-section::-webkit-scrollbar-thumb:hover{
-    background:linear-gradient(to bottom, rgba(59,130,246,0.9), rgba(16,185,129,0.9));
-    box-shadow:0 0 10px rgba(59,130,246,0.3);
+    background:linear-gradient(to bottom, rgba(59,130,246,1), rgba(16,185,129,1));
+    box-shadow:0 0 15px rgba(59,130,246,0.4);
 }
 
 /* Para Firefox */
 .nav-section{
     scrollbar-width:thin;
-    scrollbar-color:rgba(59,130,246,0.6) rgba(255,255,255,0.05);
+    scrollbar-color:rgba(59,130,246,0.7) transparent;
 }
 
 .sidebar-btn{
