@@ -514,11 +514,12 @@ body{
     position: relative;
     margin: 10px;
     line-height: 0;
-    user-select: auto;
+    user-select: none;
     -webkit-user-drag: none;
-    cursor: default;
+    cursor: grab;
     transition: box-shadow 0.2s;
     border: 2px solid transparent;
+    vertical-align: middle;
 }
 
 .img-wrapper:active {
@@ -1449,17 +1450,28 @@ body{
 
                   setupImageInteractivity(wrapper);
 
-                  const selection = window.getSelection();
-                  if (selection.rangeCount > 0) {
-                      const range = selection.getRangeAt(0);
-                      range.insertNode(wrapper);
-                      range.setStartAfter(wrapper);
-                      range.collapse(true);
-                      selection.removeAllRanges();
-                      selection.addRange(range);
-                  } else {
-                      editor.appendChild(wrapper);
-                  }
+	                  const selection = window.getSelection();
+	                  if (selection.rangeCount > 0) {
+	                      const range = selection.getRangeAt(0);
+	                      range.deleteContents();
+	                      
+	                      // Insertar un espacio antes y después para facilitar la escritura
+	                      const spaceBefore = document.createTextNode('\u00A0');
+	                      const spaceAfter = document.createTextNode('\u00A0');
+	                      
+	                      range.insertNode(spaceAfter);
+	                      range.insertNode(wrapper);
+	                      range.insertNode(spaceBefore);
+	                      
+	                      range.setStartAfter(spaceAfter);
+	                      range.collapse(true);
+	                      selection.removeAllRanges();
+	                      selection.addRange(range);
+	                  } else {
+	                      editor.appendChild(wrapper);
+	                      editor.appendChild(document.createTextNode('\u00A0'));
+	                  }
+	                  editor.focus();
               };
               reader.readAsDataURL(file);
           } else if (item.kind === 'string') {
