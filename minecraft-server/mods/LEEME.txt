@@ -1,0 +1,29 @@
+╔══════════════════════════════════════════════════════════════╗
+║     CARPETA DE MODS - SERVIDOR NEOFORGE 1.21.1            ║
+╚══════════════════════════════════════════════════════════════╝
+
+INSTRUCCIONES:
+
+1. Coloca TODOS tus mods (.jar) dentro de esta carpeta.
+   Los mods deben ser compatibles con NeoForge 1.21.1.
+
+2. Asegúrate de tener exactamente los mismos mods en el
+   cliente de cada jugador que se conecte al servidor.
+
+3. Si un mod requiere dependencias (librerías), también
+   colócalas aquí.
+
+4. Los mods del servidor deben coincidir con los del cliente
+   para que tus amigos puedan conectarse sin errores.
+
+5. Recomendaciones de mods populares para NeoForge 1.21.1:
+   -JEI (Just Enough Items) - para ver recetas
+   -Jade - para ver info de bloques
+   -Xaero's Minimap - minimapa
+   -JEI Integration - integración de recetas
+   -Sodium/Embeddium - optimización de rendimiento
+   -FerriteCore - reduce uso de RAM
+   -LazyDFU - carga más rápida
+
+NOTA: Este archivo no es un mod, puedes borrarlo o dejarlo.
+      Solo los archivos .jar serán cargados por NeoForge.

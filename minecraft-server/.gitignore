@@ -1,0 +1,25 @@
+# Archivos de log
+logs/
+
+# Mundo del juego (muy pesado)
+world/
+world_nether/
+world_the_end/
+
+# Datos de jugadores
+playerdata/
+
+# Stats
+stats/
+
+# Cache
+cache/
+
+# JAR del servidor (cada quien lo descarga)
+# run.jar
+
+# Ngrok (cada quien lo descarga)
+# ngrok.exe
+
+# Config authtoken de ngrok
+ngrok.yml
